@@ -11,7 +11,7 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Your Portfolio",
+  title: "Justin P Barnett",
   description: "Interactive portfolio with AI-powered chat",
 };
 

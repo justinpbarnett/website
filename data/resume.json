@@ -1,7 +1,7 @@
 {
   "basics": {
     "name": "Justin Barnett",
-    "label": "Director of Software Engineering",
+    "label": "Senior Software Engineer",
     "email": "barnett.justin@gmail.com",
     "phone": "(770) 318-5334",
     "summary": "Experienced software developer and XR leader specializing in virtual and augmented reality technologies.",
@@ -41,7 +41,7 @@
   "work": [
     {
       "company": "thinAiR",
-      "position": "Director of Software Engineering",
+      "position": "Senior Software Engineer",
       "startDate": "2024-10",
       "endDate": "Present",
       "summary": "Lead XR software development teams for client projects."

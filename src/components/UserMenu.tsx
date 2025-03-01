@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useSupabase } from '@/components/providers/SupabaseProvider';
-import type { User } from '@supabase/auth-helpers-nextjs';
+import type { User } from '@supabase/supabase-js';
 
 interface UserMenuProps {
   user: User;
@@ -63,11 +63,11 @@ export default function UserMenu({ user }: UserMenuProps) {
         {userAvatar ? (
           <img
             src={userAvatar}
-            alt={`${userName}'s avatar`}
+            alt=""
             className="w-10 h-10 rounded-full border-2 border-gray-200 dark:border-gray-700"
           />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold">
+          <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 flex items-center justify-center font-medium">
             {userInitial}
           </div>
         )}
