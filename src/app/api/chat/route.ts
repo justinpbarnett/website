@@ -3,6 +3,45 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import { OpenAIStream, StreamingTextResponse } from 'ai';
 
+// Rate limiting configuration
+const RATE_LIMIT = {
+  windowMs: 60 * 1000, // 1 minute
+  maxRequests: 10, // max requests per window
+  cooldownMs: 1000, // 1 second between requests
+};
+
+// Store for rate limiting
+const requestStore = new Map<string, { count: number; lastRequest: number }>();
+
+// Rate limiting function
+function isRateLimited(ip: string): { limited: boolean; message?: string } {
+  const now = Date.now();
+  const userRequests = requestStore.get(ip) || { count: 0, lastRequest: 0 };
+
+  // Check cooldown
+  if (now - userRequests.lastRequest < RATE_LIMIT.cooldownMs) {
+    return { limited: true, message: 'Please wait a moment before sending another message.' };
+  }
+
+  // Reset count if window has passed
+  if (now - userRequests.lastRequest > RATE_LIMIT.windowMs) {
+    userRequests.count = 0;
+  }
+
+  // Check max requests
+  if (userRequests.count >= RATE_LIMIT.maxRequests) {
+    return { limited: true, message: 'Too many requests. Please try again later.' };
+  }
+
+  // Update request store
+  requestStore.set(ip, {
+    count: userRequests.count + 1,
+    lastRequest: now,
+  });
+
+  return { limited: false };
+}
+
 // Create OpenAI client
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
@@ -25,6 +64,21 @@ interface ContentMatch {
 
 export async function POST(req: Request) {
   try {
+    // Get IP address from headers or request
+    const ip = req.headers.get('x-forwarded-for') || 'unknown';
+    
+    // Check rate limit
+    const rateLimitCheck = isRateLimited(ip);
+    if (rateLimitCheck.limited) {
+      return new Response(
+        JSON.stringify({ error: rateLimitCheck.message }), 
+        { 
+          status: 429,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
     const { messages } = await req.json();
     const lastMessage = messages[messages.length - 1];
 
@@ -112,11 +166,8 @@ ${relevantContent}`
       max_tokens: 500,
     });
 
-    // Use the new OpenAIStream helper
-    const stream = OpenAIStream(response);
-
-    // Return the streaming response
-    return new StreamingTextResponse(stream);
+    // Force type compatibility between OpenAI stream and AI package
+    return new StreamingTextResponse(OpenAIStream(response as any));
   } catch (error) {
     console.error('Chat API error:', error);
     return new Response(
