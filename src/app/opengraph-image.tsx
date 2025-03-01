@@ -6,13 +6,14 @@ export const size = {
   width: 1200,
   height: 630,
 };
+export const contentType = 'image/png';
 
 export default async function Image() {
   return new ImageResponse(
     (
       <div
         style={{
-          background: 'linear-gradient(to bottom, #ffffff, #f3f4f6)',
+          background: 'black',
           width: '100%',
           height: '100%',
           display: 'flex',
@@ -36,7 +37,7 @@ export default async function Image() {
               fontSize: '64px',
               fontWeight: 'bold',
               letterSpacing: '-0.05em',
-              color: '#111827',
+              color: 'white',
               margin: 0,
               lineHeight: 1,
             }}
@@ -46,7 +47,7 @@ export default async function Image() {
           <p
             style={{
               fontSize: '32px',
-              color: '#4B5563',
+              color: '#9CA3AF',
               margin: 0,
               lineHeight: 1.5,
             }}
