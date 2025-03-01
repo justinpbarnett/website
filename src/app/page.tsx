@@ -267,7 +267,7 @@ export default function Home() {
         <div className="flex flex-col flex-1 max-w-5xl mx-auto w-full px-4 md:px-8">
           <div
             ref={chatContainerRef}
-            className="flex-1 overflow-y-auto space-y-6 pt-4 pb-32"
+            className="flex-1 overflow-y-auto space-y-6 pt-[calc(8rem+88px)] md:pt-[60vh] pb-32"
           >
             {messages.map((message, i) => (
               <div
