@@ -16,13 +16,13 @@ import type { ComponentPropsWithoutRef } from 'react';
 
 const initialSuggestions = [
   "Where did you go to school?",
-  "Tell me about your most recent projects.",
-  "What technologies do you specialize in?",
-  "What's your favorite programming language?",
-  "How did you get into programming?",
-  "What's your development philosophy?",
-  "Tell me about a challenging project.",
-  "What's your preferred tech stack?",
+  "What do you do for fun?",
+  "Tell me about your family.",
+  "What's your fav tech stack?",
+  "How'd you get into VR?",
+  "What's Search & Rescue like?",
+  "Tell me about your YouTube channel.",
+  "How do you balance work and family?",
 ];
 
 export default function Home() {
@@ -124,6 +124,9 @@ export default function Home() {
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
+    
+    // Only proceed if there's actual input text
+    if (!input.trim()) return;
     
     try {
       await handleSubmit(e);
@@ -459,6 +462,8 @@ export default function Home() {
                     onClick={() => handleSuggestionClick(suggestion)}
                     disabled={isLoading}
                     className="px-3 py-1 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors border border-gray-200 dark:border-gray-800 rounded-full"
+                    // Prevent these buttons from submitting the form when clicked
+                    type="button"
                   >
                     {suggestion}
                   </button>
