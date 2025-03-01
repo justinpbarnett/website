@@ -301,7 +301,7 @@ export default function Home() {
       {/* Login modal */}
       {showLogin && !user && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="relative bg-white dark:bg-gray-800 rounded-lg w-full max-w-md">
+          <div className="relative bg-white dark:bg-black rounded-lg w-full max-w-md border border-gray-200 dark:border-gray-800 shadow-lg">
             <button
               onClick={() => setShowLogin(false)}
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
