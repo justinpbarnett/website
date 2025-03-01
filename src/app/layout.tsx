@@ -13,6 +13,28 @@ const mono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Justin P Barnett",
   description: "Interactive portfolio with AI-powered chat",
+  metadataBase: new URL('https://justinpbarnett.com'),
+  openGraph: {
+    title: "Justin P Barnett",
+    description: "Interactive portfolio with AI-powered chat",
+    type: "website",
+    siteName: "Justin P Barnett",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Justin P Barnett - Interactive portfolio with AI-powered chat"
+      }
+    ]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Justin P Barnett",
+    description: "Interactive portfolio with AI-powered chat",
+    images: ["/og.png"],
+    creator: "@justinpbarnett"
+  }
 };
 
 export default function RootLayout({
