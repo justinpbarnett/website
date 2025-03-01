@@ -285,71 +285,82 @@ export default function Home() {
       )}
 
       <main className="flex-1 relative h-screen">
-        <div className="flex flex-col h-full max-w-5xl mx-auto w-full px-4 md:px-8">
+        <div className="flex flex-col h-full max-w-5xl mx-auto w-full">
           <div
             ref={chatContainerRef}
             className={cn(
-              "absolute inset-x-0 overflow-y-auto flex flex-col justify-end",
+              "absolute inset-x-0 overflow-y-auto",
               isKeyboardOpen 
-                ? "top-0 bottom-20" 
-                : "top-[calc(8rem+88px)] bottom-32 md:top-[60vh]"
+                ? "top-4 bottom-16" 
+                : "top-20 bottom-32 md:top-0"
             )}
           >
-            <div className="space-y-6 px-4 md:px-8">
-              {messages.map((message, i) => (
-                <div
-                  key={i}
-                  className={cn(
-                    'flex flex-col space-y-2 overflow-x-auto',
-                    message.role === 'assistant' ? 'items-start' : 'items-end'
+            <div className="max-w-5xl mx-auto w-full">
+              <div className="px-4 md:px-8">
+                <div className="space-y-6">
+                  {/* Add extra padding div for mobile scrolling */}
+                  <div className={cn(
+                    "h-[50vh]",
+                    isKeyboardOpen ? "hidden" : "block md:hidden"
+                  )} />
+                  {/* Desktop padding */}
+                  <div className="hidden md:block h-[50vh]" />
+                  {messages.map((message, i) => (
+                    <div
+                      key={i}
+                      className={cn(
+                        'flex flex-col space-y-2 overflow-x-auto',
+                        message.role === 'assistant' ? 'items-start' : 'items-end'
+                      )}
+                    >
+                      <ReactMarkdown
+                        className={cn(
+                          'prose dark:prose-invert max-w-none break-words prose-p:leading-relaxed prose-pre:p-0 w-full',
+                          message.role === 'assistant' ? 'prose-p:text-gray-900 dark:prose-p:text-gray-100' : 'prose-p:text-gray-600 dark:prose-p:text-gray-400'
+                        )}
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          code(props: ComponentPropsWithoutRef<'code'> & { inline?: boolean }) {
+                            const { inline, className, children } = props;
+                            return (
+                              <code
+                                className={cn(
+                                  'bg-gray-100 dark:bg-gray-800 rounded px-1',
+                                  inline ? 'py-0.5' : 'block p-2',
+                                  className
+                                )}
+                              >
+                                {children}
+                              </code>
+                            );
+                          },
+                          a({ node, className, children, ...props }) {
+                            return (
+                              <a
+                                className={cn(
+                                  'text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200',
+                                  className
+                                )}
+                                {...props}
+                              >
+                                {children}
+                              </a>
+                            );
+                          }
+                        }}
+                      >
+                        {message.content}
+                      </ReactMarkdown>
+                    </div>
+                  ))}
+                  {isLoading && (
+                    <div className="flex items-center space-x-2">
+                      <LoadingDots />
+                    </div>
                   )}
-                >
-                  <ReactMarkdown
-                    className={cn(
-                      'prose dark:prose-invert max-w-none break-words prose-p:leading-relaxed prose-pre:p-0 w-full',
-                      message.role === 'assistant' ? 'prose-p:text-gray-900 dark:prose-p:text-gray-100' : 'prose-p:text-gray-600 dark:prose-p:text-gray-400'
-                    )}
-                    remarkPlugins={[remarkGfm]}
-                    components={{
-                      code(props: ComponentPropsWithoutRef<'code'> & { inline?: boolean }) {
-                        const { inline, className, children } = props;
-                        return (
-                          <code
-                            className={cn(
-                              'bg-gray-100 dark:bg-gray-800 rounded px-1',
-                              inline ? 'py-0.5' : 'block p-2',
-                              className
-                            )}
-                          >
-                            {children}
-                          </code>
-                        );
-                      },
-                      a({ node, className, children, ...props }) {
-                        return (
-                          <a
-                            className={cn(
-                              'text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200',
-                              className
-                            )}
-                            {...props}
-                          >
-                            {children}
-                          </a>
-                        );
-                      }
-                    }}
-                  >
-                    {message.content}
-                  </ReactMarkdown>
+                  <div ref={messagesEndRef} />
                 </div>
-              ))}
-              {isLoading && (
-                <div className="flex items-center space-x-2">
-                  <LoadingDots />
-                </div>
-              )}
-              <div ref={messagesEndRef} />
+              </div>
             </div>
           </div>
 
@@ -357,7 +368,7 @@ export default function Home() {
             "fixed bottom-0 left-0 right-0 z-20",
             isKeyboardOpen 
               ? "bg-white dark:bg-black pb-4" 
-              : "bg-gradient-to-b from-transparent to-white dark:to-black pt-24 pb-8"
+              : "bg-gradient-to-b from-transparent via-white/50 to-white dark:via-black/50 dark:to-black pt-24 pb-8"
           )}>
             <div className="max-w-5xl mx-auto w-full px-4 md:px-8">
               <form onSubmit={onSubmit} className="flex flex-col space-y-4">
