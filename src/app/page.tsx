@@ -264,112 +264,107 @@ export default function Home() {
       )}
 
       <main className="flex-1 relative">
-        <div className="max-w-5xl mx-auto w-full p-8 flex flex-col min-h-screen">
-          <div className="flex-1 overflow-y-auto" ref={chatContainerRef}>
-            <div className="space-y-6 pb-[calc(2rem+88px)] pt-[calc(8rem+88px)] md:pt-[60vh]">
-              {messages.map((m) => (
-                <div
-                  key={m.id}
+        <div className="flex flex-col flex-1 max-w-5xl mx-auto w-full px-4 md:px-8">
+          <div
+            ref={chatContainerRef}
+            className="flex-1 overflow-y-auto space-y-6 pt-4 pb-32"
+          >
+            {messages.map((message, i) => (
+              <div
+                key={i}
+                className={cn(
+                  'flex flex-col space-y-2 overflow-x-auto',
+                  message.role === 'assistant' ? 'items-start' : 'items-end'
+                )}
+              >
+                <ReactMarkdown
                   className={cn(
-                    'flex w-full items-start gap-4 p-4 rounded-lg',
-                    m.role === 'assistant' ? 'bg-muted' : 'bg-background'
+                    'prose dark:prose-invert max-w-none break-words prose-p:leading-relaxed prose-pre:p-0 w-full',
+                    message.role === 'assistant' ? 'prose-p:text-gray-900 dark:prose-p:text-gray-100' : 'prose-p:text-gray-600 dark:prose-p:text-gray-400'
                   )}
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    code(props: ComponentPropsWithoutRef<'code'> & { inline?: boolean }) {
+                      const { inline, className, children } = props;
+                      return (
+                        <code
+                          className={cn(
+                            'bg-gray-100 dark:bg-gray-800 rounded px-1',
+                            inline ? 'py-0.5' : 'block p-2',
+                            className
+                          )}
+                        >
+                          {children}
+                        </code>
+                      );
+                    },
+                    a({ node, className, children, ...props }) {
+                      return (
+                        <a
+                          className={cn(
+                            'text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200',
+                            className
+                          )}
+                          {...props}
+                        >
+                          {children}
+                        </a>
+                      );
+                    }
+                  }}
                 >
-                  <span className="font-semibold w-14">
-                    {m.role === 'assistant' ? 'AI' : 'You'}:
-                  </span>
-                  <div className="flex-1 space-y-2">
-                    <ReactMarkdown 
-                      remarkPlugins={[remarkGfm]}
-                      components={{
-                        code(props: ComponentPropsWithoutRef<'code'> & { inline?: boolean }) {
-                          const { inline, className, children } = props;
-                          return (
-                            <code
-                              className={cn(
-                                'bg-gray-100 dark:bg-gray-800 rounded px-1',
-                                inline ? 'py-0.5' : 'block p-2',
-                                className
-                              )}
-                            >
-                              {children}
-                            </code>
-                          );
-                        },
-                        a({ node, className, children, ...props }) {
-                          return (
-                            <a
-                              className={cn(
-                                'text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200',
-                                className
-                              )}
-                              {...props}
-                            >
-                              {children}
-                            </a>
-                          );
-                        }
-                      }}
-                    >
-                      {m.content}
-                    </ReactMarkdown>
-                  </div>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="flex w-full items-start gap-4 p-4 rounded-lg bg-muted">
-                  <span className="font-semibold w-14">AI:</span>
-                  <div className="flex-1">
-                    <LoadingDots className="text-2xl" />
-                  </div>
-                </div>
-              )}
-              {error && (
-                <div className="flex w-full items-start gap-4 p-4 rounded-lg bg-destructive/10 text-destructive">
-                  <span className="font-semibold">Error:</span>
-                  <div className="flex-1">{error}</div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
+                  {message.content}
+                </ReactMarkdown>
+              </div>
+            ))}
+            {isLoading && (
+              <div className="flex items-center space-x-2">
+                <LoadingDots />
+              </div>
+            )}
+            <div ref={messagesEndRef} />
           </div>
 
-          <div className="fixed bottom-0 left-0 right-0 z-20 bg-white dark:bg-black">
-            <div className="max-w-5xl mx-auto w-full px-8 py-4">
-              <div className="flex flex-wrap gap-2 justify-center mb-4">
-                {currentSuggestions.map((suggestion) => (
-                  <button
-                    key={suggestion}
-                    onClick={() => handleSuggestionClick(suggestion)}
-                    className="px-3 py-1 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors border-b border-transparent hover:border-gray-200 dark:hover:border-gray-800"
-                    disabled={isLoading}
-                  >
-                    {suggestion}
-                  </button>
-                ))}
-              </div>
+          <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-b from-transparent to-white dark:to-black pt-24 pb-8">
+            <div className="max-w-5xl mx-auto w-full px-4 md:px-8">
+              <form onSubmit={onSubmit} className="flex flex-col space-y-4">
+                {/* Chat suggestions - hidden on mobile */}
+                <div className="hidden md:flex flex-wrap gap-2">
+                  {currentSuggestions.map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      disabled={isLoading}
+                      className="px-3 py-1 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors border-b border-transparent hover:border-gray-200 dark:hover:border-gray-800"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
 
-              <form onSubmit={onSubmit} className="flex gap-2">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={handleInputChange}
-                  placeholder="Ask me anything about Justin..."
-                  className="flex-1 p-2 bg-transparent border-b border-gray-200 dark:border-gray-800 focus:border-gray-400 dark:focus:border-gray-600 focus:outline-none text-gray-900 dark:text-gray-100 transition-colors"
-                />
-                <button
-                  type="submit"
-                  disabled={isLoading || !input.trim()}
-                  className={cn(
-                    "px-4 py-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors",
-                    (isLoading || !input.trim()) 
-                      ? "opacity-50 cursor-not-allowed" 
-                      : ""
-                  )}
-                >
-                  send
-                </button>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={handleInputChange}
+                    placeholder="Ask me anything..."
+                    className="flex-1 p-2 bg-transparent border-b border-gray-200 dark:border-gray-800 focus:border-gray-400 dark:focus:border-gray-600 focus:outline-none text-gray-900 dark:text-gray-100 transition-colors"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isLoading || !input.trim()}
+                    className="px-4 py-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    send
+                  </button>
+                </div>
               </form>
+
+              {error && (
+                <div className="mt-4 text-sm text-red-600 dark:text-red-400">
+                  {error}
+                </div>
+              )}
             </div>
           </div>
         </div>
