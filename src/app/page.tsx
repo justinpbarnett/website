@@ -300,7 +300,7 @@ export default function Home() {
                 <div className="space-y-6">
                   {/* Add extra padding div for mobile scrolling */}
                   <div className={cn(
-                    "h-[50vh]",
+                    "h-[100vh]",
                     isKeyboardOpen ? "hidden" : "block md:hidden"
                   )} />
                   {/* Desktop padding */}
@@ -359,6 +359,11 @@ export default function Home() {
                     </div>
                   )}
                   <div ref={messagesEndRef} />
+                  {/* Add bottom padding to ensure scrollability */}
+                  <div className={cn(
+                    "h-32",
+                    isKeyboardOpen ? "hidden" : "block"
+                  )} />
                 </div>
               </div>
             </div>
