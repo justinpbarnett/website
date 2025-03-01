@@ -1,0 +1,94 @@
+{
+  "basics": {
+    "name": "Justin Barnett",
+    "label": "Director of Software Engineering",
+    "email": "barnett.justin@gmail.com",
+    "phone": "(770) 318-5334",
+    "summary": "Experienced software developer and XR leader specializing in virtual and augmented reality technologies.",
+    "profiles": [
+      {
+        "network": "LinkedIn",
+        "url": "https://linkedin.com/in/justin-p-barnett"
+      },
+      {
+        "network": "X",
+        "url": "https://x.com/justinpbarnett"
+      },
+      {
+        "network": "YouTube",
+        "url": "https://youtube.com/JustinPBarnett"
+      }
+    ]
+  },
+  "skills": [
+    {
+      "name": "XR Development",
+      "keywords": ["VR", "AR", "Unity", "Game Development"]
+    },
+    {
+      "name": "Programming",
+      "keywords": ["C#", "JavaScript", "TypeScript"]
+    },
+    {
+      "name": "Web Development",
+      "keywords": ["ASP.NET", "Angular", "React.js"]
+    },
+    {
+      "name": "Leadership",
+      "keywords": ["Team Management", "Coaching"]
+    }
+  ],
+  "work": [
+    {
+      "company": "thinAiR",
+      "position": "Director of Software Engineering",
+      "startDate": "2024-10",
+      "endDate": "Present",
+      "summary": "Lead XR software development teams for client projects."
+    },
+    {
+      "company": "VR Creators",
+      "position": "Founder",
+      "startDate": "2021-09",
+      "endDate": "Present",
+      "summary": "Help professionals transition to VR careers via coaching."
+    },
+    {
+      "company": "YouTube",
+      "position": "Educator",
+      "startDate": "2020-04",
+      "endDate": "Present",
+      "summary": "Teach VR game development with Unity and C#."
+    },
+    {
+      "company": "mpressed.ai",
+      "position": "Software Engineer",
+      "startDate": "2024-04",
+      "endDate": "2024-10",
+      "summary": "Developed an AI-powered platform for creating newsletters."
+    },
+    {
+      "company": "Foundry - Spatial Computing",
+      "position": "CTO",
+      "startDate": "2022-08",
+      "endDate": "2024-01",
+      "summary": "Co-founded to simplify multiplayer VR games; raised $250K+."
+    },
+    {
+      "company": "Improving",
+      "position": "Software Developer",
+      "startDate": "2019-05",
+      "endDate": "2023-01",
+      "summary": "Built web apps for clients like Assurant and GA Lottery."
+    }
+  ],
+  "education": [
+    {
+      "institution": "Kennesaw State University",
+      "area": "Computer Software Engineering",
+      "studyType": "Bachelor of Science",
+      "startDate": "2014-09",
+      "endDate": "2020-05"
+    }
+  ]
+}
