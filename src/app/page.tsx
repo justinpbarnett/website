@@ -33,6 +33,8 @@ export default function Home() {
   const [usedSuggestions] = useState(new Set<string>());
   const [currentSuggestions, setCurrentSuggestions] = useState(initialSuggestions.slice(0, 3));
   const [userHasScrolled, setUserHasScrolled] = useState(false);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [inputFocused, setInputFocused] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const supabase = useSupabase();
@@ -60,6 +62,19 @@ export default function Home() {
 
     return () => subscription.unsubscribe();
   }, [supabase.auth]);
+
+  // Add keyboard detection
+  useEffect(() => {
+    const initialHeight = window.visualViewport?.height || window.innerHeight;
+    
+    const handleResize = () => {
+      const currentHeight = window.visualViewport?.height || window.innerHeight;
+      setIsKeyboardOpen(currentHeight < initialHeight * 0.8);
+    };
+
+    window.visualViewport?.addEventListener('resize', handleResize);
+    return () => window.visualViewport?.removeEventListener('resize', handleResize);
+  }, []);
 
   const rotateSuggestions = () => {
     const unusedSuggestions = initialSuggestions.filter(s => !usedSuggestions.has(s));
@@ -232,8 +247,14 @@ export default function Home() {
         )}
       </div>
 
-      <header className="fixed top-0 left-0 right-0 z-10 pt-16 md:pt-0">
-        <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-white/95 from-0% via-white/95 via-45% to-transparent to-50% dark:from-black/95 dark:from-0% dark:via-black/95 dark:via-45% dark:to-transparent dark:to-50% h-[100vh]" />
+      <header className={cn(
+        "fixed top-0 left-0 right-0 z-10 pt-16 md:pt-0",
+        isKeyboardOpen && inputFocused && "md:hidden hidden"
+      )}>
+        <div className={cn(
+          "absolute inset-0 pointer-events-none bg-gradient-to-b from-white/95 from-0% via-white/95 via-45% to-transparent to-50% dark:from-black/95 dark:from-0% dark:via-black/95 dark:via-45% dark:to-transparent dark:to-50% h-[100vh]",
+          isKeyboardOpen && inputFocused && "hidden"
+        )} />
         <div className="w-full py-8 md:py-[30vh] relative z-10 pointer-events-auto">
           <div className="max-w-5xl mx-auto w-full px-8">
             <div className="text-left">
@@ -263,69 +284,81 @@ export default function Home() {
         </div>
       )}
 
-      <main className="flex-1 relative">
-        <div className="flex flex-col flex-1 max-w-5xl mx-auto w-full px-4 md:px-8">
+      <main className="flex-1 relative h-screen">
+        <div className="flex flex-col h-full max-w-5xl mx-auto w-full px-4 md:px-8">
           <div
             ref={chatContainerRef}
-            className="flex-1 overflow-y-auto space-y-6 pt-[calc(8rem+88px)] md:pt-[60vh] pb-32"
-          >
-            {messages.map((message, i) => (
-              <div
-                key={i}
-                className={cn(
-                  'flex flex-col space-y-2 overflow-x-auto',
-                  message.role === 'assistant' ? 'items-start' : 'items-end'
-                )}
-              >
-                <ReactMarkdown
-                  className={cn(
-                    'prose dark:prose-invert max-w-none break-words prose-p:leading-relaxed prose-pre:p-0 w-full',
-                    message.role === 'assistant' ? 'prose-p:text-gray-900 dark:prose-p:text-gray-100' : 'prose-p:text-gray-600 dark:prose-p:text-gray-400'
-                  )}
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    code(props: ComponentPropsWithoutRef<'code'> & { inline?: boolean }) {
-                      const { inline, className, children } = props;
-                      return (
-                        <code
-                          className={cn(
-                            'bg-gray-100 dark:bg-gray-800 rounded px-1',
-                            inline ? 'py-0.5' : 'block p-2',
-                            className
-                          )}
-                        >
-                          {children}
-                        </code>
-                      );
-                    },
-                    a({ node, className, children, ...props }) {
-                      return (
-                        <a
-                          className={cn(
-                            'text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200',
-                            className
-                          )}
-                          {...props}
-                        >
-                          {children}
-                        </a>
-                      );
-                    }
-                  }}
-                >
-                  {message.content}
-                </ReactMarkdown>
-              </div>
-            ))}
-            {isLoading && (
-              <div className="flex items-center space-x-2">
-                <LoadingDots />
-              </div>
+            className={cn(
+              "absolute inset-x-0 overflow-y-auto flex flex-col justify-end",
+              isKeyboardOpen 
+                ? "top-0 bottom-20" 
+                : "top-[calc(8rem+88px)] bottom-32 md:top-[60vh]"
             )}
-            <div ref={messagesEndRef} />
+          >
+            <div className="space-y-6 px-4 md:px-8">
+              {messages.map((message, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    'flex flex-col space-y-2 overflow-x-auto',
+                    message.role === 'assistant' ? 'items-start' : 'items-end'
+                  )}
+                >
+                  <ReactMarkdown
+                    className={cn(
+                      'prose dark:prose-invert max-w-none break-words prose-p:leading-relaxed prose-pre:p-0 w-full',
+                      message.role === 'assistant' ? 'prose-p:text-gray-900 dark:prose-p:text-gray-100' : 'prose-p:text-gray-600 dark:prose-p:text-gray-400'
+                    )}
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      code(props: ComponentPropsWithoutRef<'code'> & { inline?: boolean }) {
+                        const { inline, className, children } = props;
+                        return (
+                          <code
+                            className={cn(
+                              'bg-gray-100 dark:bg-gray-800 rounded px-1',
+                              inline ? 'py-0.5' : 'block p-2',
+                              className
+                            )}
+                          >
+                            {children}
+                          </code>
+                        );
+                      },
+                      a({ node, className, children, ...props }) {
+                        return (
+                          <a
+                            className={cn(
+                              'text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200',
+                              className
+                            )}
+                            {...props}
+                          >
+                            {children}
+                          </a>
+                        );
+                      }
+                    }}
+                  >
+                    {message.content}
+                  </ReactMarkdown>
+                </div>
+              ))}
+              {isLoading && (
+                <div className="flex items-center space-x-2">
+                  <LoadingDots />
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
           </div>
 
-          <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-b from-transparent to-white dark:to-black pt-24 pb-8">
+          <div className={cn(
+            "fixed bottom-0 left-0 right-0 z-20",
+            isKeyboardOpen 
+              ? "bg-white dark:bg-black pb-4" 
+              : "bg-gradient-to-b from-transparent to-white dark:to-black pt-24 pb-8"
+          )}>
             <div className="max-w-5xl mx-auto w-full px-4 md:px-8">
               <form onSubmit={onSubmit} className="flex flex-col space-y-4">
                 {/* Chat suggestions - hidden on mobile */}
@@ -347,6 +380,8 @@ export default function Home() {
                     type="text"
                     value={input}
                     onChange={handleInputChange}
+                    onFocus={() => setInputFocused(true)}
+                    onBlur={() => setInputFocused(false)}
                     placeholder="Ask me anything..."
                     className="flex-1 p-2 bg-transparent border-b border-gray-200 dark:border-gray-800 focus:border-gray-400 dark:focus:border-gray-600 focus:outline-none text-gray-900 dark:text-gray-100 transition-colors"
                   />
