@@ -44,8 +44,24 @@ export default function Home() {
     onError: (err) => {
       setError(err.message);
       console.error('Chat error:', err);
+    },
+    id: 'persistent-chat',
+    initialMessages: typeof window !== 'undefined' 
+      ? JSON.parse(localStorage.getItem('chatMessages') || '[]') 
+      : [],
+    onFinish: (message) => {
+      if (typeof window !== 'undefined') {
+        const updatedMessages = [...messages, message];
+        localStorage.setItem('chatMessages', JSON.stringify(updatedMessages));
+      }
     }
   });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && messages.length > 0) {
+      localStorage.setItem('chatMessages', JSON.stringify(messages));
+    }
+  }, [messages]);
 
   useEffect(() => {
     // Get initial session
@@ -131,6 +147,7 @@ export default function Home() {
 
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = container;
+      // Check if user is at the bottom of the chat
       const isAtBottom = Math.abs(scrollHeight - scrollTop - clientHeight) < 10;
       
       if (!isAtBottom) {
@@ -144,8 +161,17 @@ export default function Home() {
     return () => container.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Force scroll to bottom on initial load
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
+      setUserHasScrolled(false);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Top navigation bar */}
       <div className="fixed top-0 left-0 right-0 z-30">
         <div className="max-w-5xl mx-auto w-full px-8 py-4">
           <div className="flex justify-between items-center">
@@ -247,29 +273,32 @@ export default function Home() {
         )}
       </div>
 
+      {/* Title and subtitle section - hidden when keyboard is open on mobile */}
       <header className={cn(
-        "fixed top-0 left-0 right-0 z-10 pt-16 md:pt-0",
-        isKeyboardOpen && inputFocused && "md:hidden hidden"
+        "fixed z-20",
+        // Position at 1/3 of screen height on desktop instead of center
+        "md:flex md:items-start md:h-screen md:w-full md:pt-[33vh]",
+        // On mobile, position at top
+        "left-0 right-0 top-0 pt-16",
+        // Hide when keyboard is open and input is focused on mobile
+        isKeyboardOpen && inputFocused && "hidden",
+        // Make sure it doesn't interfere with scrolling
+        "pointer-events-none"
       )}>
-        <div className={cn(
-          "absolute inset-0 pointer-events-none bg-gradient-to-b from-white/95 from-0% via-white/95 via-45% to-transparent to-50% dark:from-black/95 dark:from-0% dark:via-black/95 dark:via-45% dark:to-transparent dark:to-50% h-[100vh]",
-          isKeyboardOpen && inputFocused && "hidden"
-        )} />
-        <div className="w-full py-8 md:py-[30vh] relative z-10 pointer-events-auto">
-          <div className="max-w-5xl mx-auto w-full px-8">
-            <div className="text-left">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
-                Justin P Barnett
-              </h1>
-              <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl">
-                I'm a full-stack developer<br />
-                specializing in AI, VR, and web dev.
-              </p>
-            </div>
+        <div className="max-w-5xl mx-auto w-full px-8 py-4 md:py-0">
+          <div className="text-left pointer-events-auto relative z-20">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
+              Justin P Barnett
+            </h1>
+            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300">
+              I'm a full-stack developer<br />
+              specializing in AI, VR, and web dev.
+            </p>
           </div>
         </div>
       </header>
 
+      {/* Login modal */}
       {showLogin && !user && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="relative bg-white dark:bg-gray-800 rounded-lg w-full max-w-md">
@@ -284,139 +313,183 @@ export default function Home() {
         </div>
       )}
 
+      {/* Main chat area */}
       <main className="flex-1 relative h-screen">
-        <div className="flex flex-col h-full max-w-5xl mx-auto w-full">
-          <div
-            ref={chatContainerRef}
-            className={cn(
-              "absolute inset-x-0 overflow-y-auto",
-              isKeyboardOpen 
-                ? "top-4 bottom-16" 
-                : "top-20 bottom-32 md:top-0"
-            )}
-          >
-            <div className="max-w-5xl mx-auto w-full">
-              <div className="px-4 md:px-8">
-                <div className="space-y-6">
-                  {/* Add extra padding div for mobile scrolling */}
-                  <div className={cn(
-                    "h-[100vh]",
-                    isKeyboardOpen ? "hidden" : "block md:hidden"
-                  )} />
-                  {/* Desktop padding */}
-                  <div className="hidden md:block h-[50vh]" />
-                  {messages.map((message, i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        'flex flex-col space-y-2 overflow-x-auto',
-                        message.role === 'assistant' ? 'items-start' : 'items-end'
-                      )}
-                    >
-                      <ReactMarkdown
-                        className={cn(
-                          'prose dark:prose-invert max-w-none break-words prose-p:leading-relaxed prose-pre:p-0 w-full',
-                          message.role === 'assistant' ? 'prose-p:text-gray-900 dark:prose-p:text-gray-100' : 'prose-p:text-gray-600 dark:prose-p:text-gray-400'
-                        )}
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          code(props: ComponentPropsWithoutRef<'code'> & { inline?: boolean }) {
-                            const { inline, className, children } = props;
-                            return (
-                              <code
-                                className={cn(
-                                  'bg-gray-100 dark:bg-gray-800 rounded px-1',
-                                  inline ? 'py-0.5' : 'block p-2',
-                                  className
-                                )}
-                              >
-                                {children}
-                              </code>
-                            );
-                          },
-                          a({ node, className, children, ...props }) {
-                            return (
-                              <a
-                                className={cn(
-                                  'text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200',
-                                  className
-                                )}
-                                {...props}
-                              >
-                                {children}
-                              </a>
-                            );
-                          }
-                        }}
-                      >
-                        {message.content}
-                      </ReactMarkdown>
-                    </div>
-                  ))}
-                  {isLoading && (
-                    <div className="flex items-center space-x-2">
-                      <LoadingDots />
-                    </div>
+        {/* Chat container - this is the scrollable area */}
+        <div 
+          ref={chatContainerRef}
+          className="fixed inset-x-0 top-0 bottom-24 overflow-y-auto z-0"
+          style={{ touchAction: 'pan-y' }}
+        >
+          <div className="max-w-5xl mx-auto w-full px-4 md:px-8 pb-4">
+            {/* Add extra padding at the top to allow scrolling past the gradient */}
+            <div className="h-[50vh]" />
+            
+            {/* Messages container */}
+            <div className="space-y-6">
+              {messages.map((message, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    'flex flex-col space-y-2 overflow-x-auto relative pl-4',
+                    message.role === 'assistant' 
+                      ? 'items-start' 
+                      : 'items-end'
                   )}
-                  <div ref={messagesEndRef} />
-                  {/* Add bottom padding to ensure scrollability */}
-                  <div className={cn(
-                    "h-32",
-                    isKeyboardOpen ? "hidden" : "block"
-                  )} />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className={cn(
-            "fixed bottom-0 left-0 right-0 z-20",
-            isKeyboardOpen 
-              ? "bg-white dark:bg-black pb-4" 
-              : "bg-gradient-to-b from-transparent via-white/50 to-white dark:via-black/50 dark:to-black pt-24 pb-8"
-          )}>
-            <div className="max-w-5xl mx-auto w-full px-4 md:px-8">
-              <form onSubmit={onSubmit} className="flex flex-col space-y-4">
-                {/* Chat suggestions - hidden on mobile */}
-                <div className="hidden md:flex flex-wrap gap-2">
-                  {currentSuggestions.map((suggestion) => (
-                    <button
-                      key={suggestion}
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      disabled={isLoading}
-                      className="px-3 py-1 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors border-b border-transparent hover:border-gray-200 dark:hover:border-gray-800"
-                    >
-                      {suggestion}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={input}
-                    onChange={handleInputChange}
-                    onFocus={() => setInputFocused(true)}
-                    onBlur={() => setInputFocused(false)}
-                    placeholder="Ask me anything..."
-                    className="flex-1 p-2 bg-transparent border-b border-gray-200 dark:border-gray-800 focus:border-gray-400 dark:focus:border-gray-600 focus:outline-none text-gray-900 dark:text-gray-100 transition-colors"
-                  />
-                  <button
-                    type="submit"
-                    disabled={isLoading || !input.trim()}
-                    className="px-4 py-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="absolute left-0 top-2 text-gray-400 dark:text-gray-600 font-mono">
+                    &gt;
+                  </span>
+                  <ReactMarkdown
+                    className={cn(
+                      'prose dark:prose-invert max-w-none break-words prose-p:leading-relaxed prose-pre:p-0 w-full',
+                      'prose-headings:text-gray-900 dark:prose-headings:text-white prose-headings:font-semibold',
+                      'prose-li:text-gray-700 dark:prose-li:text-gray-300',
+                      'prose-hr:border-gray-200 dark:prose-hr:border-gray-800',
+                      'prose-blockquote:text-gray-700 dark:prose-blockquote:text-gray-300 prose-blockquote:border-gray-300 dark:prose-blockquote:border-gray-700',
+                      'prose-table:border-collapse prose-th:border prose-th:border-gray-300 dark:prose-th:border-gray-700 prose-td:border prose-td:border-gray-300 dark:prose-td:border-gray-700 prose-th:p-2 prose-td:p-2',
+                      message.role === 'assistant' ? 'prose-p:text-gray-900 dark:prose-p:text-gray-100' : 'prose-p:text-gray-600 dark:prose-p:text-gray-400'
+                    )}
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      code(props: ComponentPropsWithoutRef<'code'> & { inline?: boolean }) {
+                        const { inline, className, children } = props;
+                        return (
+                          <code
+                            className={cn(
+                              'bg-gray-100 dark:bg-gray-800 rounded px-1',
+                              inline ? 'py-0.5' : 'block p-2 overflow-x-auto',
+                              className
+                            )}
+                          >
+                            {children}
+                          </code>
+                        );
+                      },
+                      a({ node, className, children, ...props }) {
+                        return (
+                          <a
+                            className={cn(
+                              'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors',
+                              className
+                            )}
+                            {...props}
+                          >
+                            {children}
+                          </a>
+                        );
+                      },
+                      ul({ node, className, children, ...props }) {
+                        return (
+                          <ul
+                            className={cn(
+                              'pl-6 list-disc my-4',
+                              className
+                            )}
+                            {...props}
+                          >
+                            {children}
+                          </ul>
+                        );
+                      },
+                      ol({ node, className, children, ...props }) {
+                        return (
+                          <ol
+                            className={cn(
+                              'pl-6 list-decimal my-4',
+                              className
+                            )}
+                            {...props}
+                          >
+                            {children}
+                          </ol>
+                        );
+                      },
+                      blockquote({ node, className, children, ...props }) {
+                        return (
+                          <blockquote
+                            className={cn(
+                              'pl-4 border-l-2 italic my-4',
+                              className
+                            )}
+                            {...props}
+                          >
+                            {children}
+                          </blockquote>
+                        );
+                      }
+                    }}
                   >
-                    send
-                  </button>
+                    {message.content}
+                  </ReactMarkdown>
                 </div>
-              </form>
-
-              {error && (
-                <div className="mt-4 text-sm text-red-600 dark:text-red-400">
-                  {error}
+              ))}
+              
+              {isLoading && (
+                <div className="flex items-center space-x-2">
+                  <LoadingDots />
                 </div>
               )}
+              
+              <div ref={messagesEndRef} />
             </div>
+          </div>
+        </div>
+
+        {/* Gradient overlay that covers the chat content */}
+        <div className={cn(
+          "fixed inset-x-0 h-3/4 top-0 z-10 pointer-events-none",
+          "bg-gradient-to-b from-white/95 from-0% via-white/90 via-30% to-transparent to-100% dark:from-black/95 dark:via-black/95 dark:to-transparent",
+          // Hide when keyboard is open and input is focused on mobile
+          isKeyboardOpen && inputFocused && "hidden"
+        )} />
+
+        {/* Input area fixed to bottom */}
+        <div className="fixed bottom-0 left-0 right-0 z-20 bg-white dark:bg-black">
+          <div className="max-w-5xl mx-auto w-full px-4 md:px-8 py-4">
+            <form onSubmit={onSubmit} className="flex flex-col space-y-4">
+              {/* Chat suggestions - only show on desktop */}
+              <div className={cn(
+                "flex flex-wrap gap-2",
+                "hidden md:flex" // Only show on desktop, hide on mobile
+              )}>
+                {currentSuggestions.map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    disabled={isLoading}
+                    className="px-3 py-1 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors border border-gray-200 dark:border-gray-800 rounded-full"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={handleInputChange}
+                  onFocus={() => setInputFocused(true)}
+                  onBlur={() => setInputFocused(false)}
+                  placeholder="Ask me anything..."
+                  className="flex-1 p-2 bg-transparent border border-gray-200 dark:border-gray-800 rounded-md px-4 focus:outline-none focus:ring-1 focus:ring-gray-400 dark:focus:ring-gray-600 text-gray-900 dark:text-gray-100"
+                />
+                <button
+                  type="submit"
+                  disabled={isLoading || !input.trim()}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Send
+                </button>
+              </div>
+            </form>
+
+            {error && (
+              <div className="mt-4 text-sm text-red-600 dark:text-red-400">
+                {error}
+              </div>
+            )}
           </div>
         </div>
       </main>
