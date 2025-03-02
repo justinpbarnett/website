@@ -29,14 +29,6 @@ export default function UserMenu({ user }: UserMenuProps) {
     }
   }, [isOpen]);
 
-  // Debug user information when component mounts
-  useEffect(() => {
-    console.log('User object:', user);
-    console.log('User metadata:', user.user_metadata);
-    console.log('App metadata:', user.app_metadata);
-    console.log('Identities:', user.identities);
-  }, [user]);
-
   const handleSignOut = async () => {
     await supabase.auth.signOut();
   };
@@ -58,16 +50,12 @@ export default function UserMenu({ user }: UserMenuProps) {
   
   if (isGitHubUser) {
     provider = 'github';
-    console.log('Provider determined from GitHub metadata');
   } else if (isGoogleUser) {
     provider = 'google';
-    console.log('Provider determined from Google metadata');
   } else if (user.identities && user.identities.length > 0) {
     provider = user.identities[0].provider;
-    console.log('Provider determined from identities array:', provider);
   } else if (user.app_metadata?.provider) {
     provider = user.app_metadata.provider;
-    console.log('Provider determined from app_metadata:', provider);
   }
   
   // Get avatar URL (both GitHub and Google store it as avatar_url)

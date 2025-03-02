@@ -89,7 +89,6 @@ export async function POST(req: Request) {
     const [provider, modelName] = model.split(':');
     
     console.log(`Request received for provider: ${provider}, model: ${modelName}, authenticated: ${isAuthenticated}`);
-    console.log(`API keys available: OpenAI: ${!!process.env.OPENAI_API_KEY}, Google: ${!!process.env.GOOGLE_API_KEY}, Anthropic: ${!!process.env.ANTHROPIC_API_KEY}, XAI: ${!!process.env.XAI_API_KEY}`);
     
     if (!provider || !modelName) {
       console.error(`Invalid model format: ${model}`);
@@ -384,21 +383,22 @@ ${relevantContent}`
       const reqData = await req.clone().json();
       if (reqData.model) {
         provider = reqData.model.split(':')[0];
+        // Log provider without sensitive details
         console.log(`Error occurred with provider: ${provider}`);
       }
     } catch (e) {
-      console.error('Failed to extract provider from request:', e);
+      console.error('Failed to extract provider from request');
     }
     
     if (error instanceof Error) {
       errorMessage = error.message;
       console.error(`Original error message: ${errorMessage}`);
       
-      // Add error details for debugging
+      // Add error details for debugging but don't include sensitive information
       errorDetails = {
         name: error.name,
         message: error.message,
-        stack: error.stack?.split('\n').slice(0, 3).join('\n') // First 3 lines of stack trace
+        // Removed stack trace which might contain sensitive path information
       };
       
       // Check for specific error types
@@ -424,7 +424,8 @@ ${relevantContent}`
           errorMessage += '. This may be due to content policy restrictions.';
         }
         
-        console.error('Google Gemini error details:', JSON.stringify(errorDetails));
+        // Log error type without sensitive details
+        console.error('Google Gemini error occurred');
       } else if (provider === 'anthropic') {
         // Special handling for Anthropic errors
         errorMessage = 'Error with Anthropic Claude model: ' + errorMessage;
@@ -438,7 +439,8 @@ ${relevantContent}`
           errorMessage += '. This may be due to content policy restrictions.';
         }
         
-        console.error('Anthropic Claude error details:', JSON.stringify(errorDetails));
+        // Log error type without sensitive details
+        console.error('Anthropic Claude error occurred');
       } else if (provider === 'openai') {
         // Special handling for OpenAI errors
         errorMessage = 'Error with OpenAI model: ' + errorMessage;
@@ -454,11 +456,12 @@ ${relevantContent}`
           errorMessage += '. The model is currently overloaded with requests. Please try again later.';
         }
         
-        console.error('OpenAI error details:', JSON.stringify(errorDetails));
+        // Log error type without sensitive details
+        console.error('OpenAI error occurred');
       }
       
-      // Include stack trace in server logs but not in response
-      console.error('Error stack:', error.stack);
+      // Include minimal error information in logs
+      console.error('Error occurred');
     }
     
     return new Response(
