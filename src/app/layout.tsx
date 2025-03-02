@@ -3,6 +3,7 @@ import { JetBrains_Mono } from 'next/font/google';
 import "./globals.css";
 import SupabaseProvider from '@/components/providers/SupabaseProvider';
 import ThemeProvider from '@/components/providers/ThemeProvider';
+import { Analytics } from "@vercel/analytics/react";
 
 const mono = JetBrains_Mono({
   subsets: ['latin'],
@@ -62,6 +63,7 @@ export default function RootLayout({
           <SupabaseProvider>
             <main className="min-h-screen">
               {children}
+              <Analytics />
             </main>
           </SupabaseProvider>
         </ThemeProvider>
