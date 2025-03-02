@@ -31,7 +31,7 @@
     },
     {
       "name": "Programming",
-      "keywords": ["C#", "JavaScript", "TypeScript", ".NET Core", "ASP.NET"]
+      "keywords": ["C#", "SQL", "JavaScript", "TypeScript", ".NET Core", "ASP.NET"]
     },
     {
       "name": "Web Development",
@@ -90,6 +90,7 @@
       "summary": "Progressed from intern to Consultant, delivering diverse client projects with Angular, ASP.NET, Azure Functions, and SQL across e-commerce, government, and self-service portals.",
       "highlights": [
         "ASP.NET",
+        "SQL",
         "C#",
         "Angular",
         ".NET Core",
