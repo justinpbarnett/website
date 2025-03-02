@@ -11,6 +11,10 @@
         "url": "https://linkedin.com/in/justin-p-barnett"
       },
       {
+        "network": "GitHub",
+        "url": "https://github.com/justinpbarnett"
+      },
+      {
         "network": "X",
         "url": "https://x.com/justinpbarnett"
       },
@@ -42,7 +46,7 @@
     {
       "company": "thinAiR",
       "position": "Senior Software Engineer",
-      "startDate": "2024-10",
+      "startDate": "2023-10",
       "endDate": "Present",
       "summary": "Lead XR software development teams for client projects."
     },
@@ -52,13 +56,6 @@
       "startDate": "2021-09",
       "endDate": "Present",
       "summary": "Help professionals transition to VR careers via coaching."
-    },
-    {
-      "company": "YouTube",
-      "position": "Educator",
-      "startDate": "2020-04",
-      "endDate": "Present",
-      "summary": "Teach VR game development with Unity and C#."
     },
     {
       "company": "mpressed.ai",
