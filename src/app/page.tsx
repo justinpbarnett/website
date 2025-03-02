@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useChat } from 'ai/react';
+import { useChat } from '@ai-sdk/react';
 import { LoadingDots } from '@/components/LoadingDots';
 import { cn } from '@/lib/utils';
 import Login from '@/components/Login';
@@ -13,6 +13,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { FormEvent } from 'react';
 import type { ComponentPropsWithoutRef } from 'react';
+import type { Message } from 'ai';
 
 const initialSuggestions = [
   "Where did you go to school?",
@@ -35,13 +36,14 @@ export default function Home() {
   const [userHasScrolled, setUserHasScrolled] = useState(false);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const [inputFocused, setInputFocused] = useState(false);
+  const [canceledMessageIds, setCanceledMessageIds] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const supabase = useSupabase();
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading, setInput, append } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, isLoading, setInput, append, stop } = useChat({
     api: '/api/chat',
-    onError: (err) => {
+    onError: (err: Error) => {
       setError(err.message);
       console.error('Chat error:', err);
     },
@@ -49,12 +51,13 @@ export default function Home() {
     initialMessages: typeof window !== 'undefined' 
       ? JSON.parse(localStorage.getItem('chatMessages') || '[]') 
       : [],
-    onFinish: (message) => {
+    onFinish: (message: Message) => {
       if (typeof window !== 'undefined') {
         const updatedMessages = [...messages, message];
         localStorage.setItem('chatMessages', JSON.stringify(updatedMessages));
       }
-    }
+    },
+    experimental_throttle: 50
   });
 
   useEffect(() => {
@@ -107,6 +110,9 @@ export default function Home() {
   const handleSuggestionClick = async (suggestion: string) => {
     if (isLoading) return;
     
+    // Clear any previous errors
+    setError(null);
+    
     usedSuggestions.add(suggestion);
     rotateSuggestions();
     
@@ -114,7 +120,7 @@ export default function Home() {
       await append({
         content: suggestion,
         role: 'user',
-      });
+      } as Message);
     } catch (err) {
       console.error('Failed to send suggestion:', err);
       setError(err instanceof Error ? err.message : 'Failed to send suggestion');
@@ -123,6 +129,11 @@ export default function Home() {
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // Prevent submission if already loading
+    if (isLoading) return;
+    
+    // Clear any previous errors
     setError(null);
     
     // Only proceed if there's actual input text
@@ -134,6 +145,22 @@ export default function Home() {
       console.error('Failed to send message:', err);
       setError(err instanceof Error ? err.message : 'Failed to send message');
     }
+  };
+
+  const handleStopGeneration = () => {
+    // Mark the last message as canceled
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.id) {
+        setCanceledMessageIds(prev => {
+          const updated = new Set(prev);
+          updated.add(lastMessage.id as string);
+          return updated;
+        });
+      }
+    }
+    stop();
+    setError(null);
   };
 
   // Scroll to bottom when messages change or while loading
@@ -330,7 +357,7 @@ export default function Home() {
             
             {/* Messages container */}
             <div className="space-y-6">
-              {messages.map((message, i) => (
+              {messages.map((message: Message, i: number) => (
                 <div
                   key={i}
                   className={cn(
@@ -425,6 +452,11 @@ export default function Home() {
                   >
                     {message.content}
                   </ReactMarkdown>
+                  {message.id && canceledMessageIds.has(message.id) && (
+                    <div className="text-xs italic text-gray-500 dark:text-gray-400 mt-1">
+                      Message was stopped early
+                    </div>
+                  )}
                 </div>
               ))}
               
@@ -480,13 +512,25 @@ export default function Home() {
                   placeholder="Ask me anything..."
                   className="flex-1 p-2 bg-transparent border border-gray-200 dark:border-gray-800 rounded-md px-4 focus:outline-none focus:ring-1 focus:ring-gray-400 dark:focus:ring-gray-600 text-gray-900 dark:text-gray-100"
                 />
-                <button
-                  type="submit"
-                  disabled={isLoading || !input.trim()}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Send
-                </button>
+                {isLoading ? (
+                  <button
+                    type="button"
+                    onClick={handleStopGeneration}
+                    className="px-4 py-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 border border-gray-200 dark:border-gray-800 rounded-md transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 7.5A2.25 2.25 0 017.5 5.25h9a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-9z" />
+                    </svg>
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={isLoading || !input.trim()}
+                    className="px-4 py-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Send
+                  </button>
+                )}
               </div>
             </form>
 

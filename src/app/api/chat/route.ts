@@ -1,7 +1,8 @@
 import OpenAI from 'openai';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
-import { OpenAIStream, StreamingTextResponse } from 'ai';
+import { openai } from '@ai-sdk/openai';
+import { streamText } from 'ai';
 
 // Rate limiting configuration
 const RATE_LIMIT = {
@@ -42,8 +43,8 @@ function isRateLimited(ip: string): { limited: boolean; message?: string } {
   return { limited: false };
 }
 
-// Create OpenAI client
-const openai = new OpenAI({
+// Create OpenAI client for embeddings
+const openaiClient = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
 });
 
@@ -83,7 +84,7 @@ export async function POST(req: Request) {
     const lastMessage = messages[messages.length - 1];
 
     // Get embeddings for the last message
-    const embedding = await openai.embeddings.create({
+    const embedding = await openaiClient.embeddings.create({
       model: 'text-embedding-3-small',
       input: lastMessage.content,
     });
@@ -105,14 +106,6 @@ export async function POST(req: Request) {
         }
       );
     }
-
-    // Debug log the matches with more detail
-    console.log('Found matches:', matches?.map((match: ContentMatch) => ({
-      type: match.type,
-      similarity: match.similarity,
-      content: match.content,
-      source: match.source
-    })));
 
     // Format relevant content for context
     const relevantContent = (matches as ContentMatch[] || [])
@@ -157,17 +150,18 @@ ${relevantContent}`
     // Add system message to the beginning of the messages array
     const augmentedMessages = [systemMessage, ...messages];
 
-    // Create chat completion with streaming
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
-      stream: true,
+    // Use the new AI SDK v4 approach with simplified implementation
+    console.log('Starting AI stream with model: gpt-4o');
+    
+    const result = await streamText({
+      model: openai('gpt-4o'),
       messages: augmentedMessages,
       temperature: 0.7,
-      max_tokens: 500,
+      maxTokens: 500,
     });
 
-    // Force type compatibility between OpenAI stream and AI package
-    return new StreamingTextResponse(OpenAIStream(response as any));
+    console.log('Stream created successfully, returning response');
+    return result.toDataStreamResponse();
   } catch (error) {
     console.error('Chat API error:', error);
     return new Response(
