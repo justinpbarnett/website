@@ -3,15 +3,6 @@ export interface Profile {
   url: string;
 }
 
-export interface Basics {
-  name: string;
-  label: string;
-  email: string;
-  phone: string;
-  summary: string;
-  profiles: Profile[];
-}
-
 export interface Skill {
   name: string;
   keywords: string[];
@@ -22,7 +13,9 @@ export interface Work {
   position: string;
   startDate: string;
   endDate: string;
+  location?: string;
   summary: string;
+  highlights?: string[];
 }
 
 export interface Education {
@@ -34,8 +27,18 @@ export interface Education {
 }
 
 export interface Resume {
-  basics: Basics;
+  basics: {
+    name: string;
+    label: string;
+    email: string;
+    phone: string;
+    summary: string;
+    profiles: Profile[];
+  };
   skills: Skill[];
-  work: Work[];
+  fullTimeWork: Work[];
+  contractWork: Work[];
+  sideProjects: Work[];
+  speakingEngagements: Work[];
   education: Education[];
 } 

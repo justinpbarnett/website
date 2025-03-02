@@ -27,62 +27,266 @@
   "skills": [
     {
       "name": "XR Development",
-      "keywords": ["VR", "AR", "Unity", "Game Development"]
+      "keywords": ["Virtual Reality (VR)", "Augmented Reality (AR)", "Unity", "Game Development", "Multiplayer Development", "Physics"]
     },
     {
       "name": "Programming",
-      "keywords": ["C#", "JavaScript", "TypeScript"]
+      "keywords": ["C#", "JavaScript", "TypeScript", ".NET Core", "ASP.NET"]
     },
     {
       "name": "Web Development",
-      "keywords": ["ASP.NET", "Angular", "React.js"]
+      "keywords": ["Next.js", "Angular", "React.js", "Supabase", "Firebase", "Stripe"]
+    },
+    {
+      "name": "AI & Modern Tech",
+      "keywords": ["AI Software Development", "LangChain", "Rapid Prototyping", "Software Development"]
     },
     {
       "name": "Leadership",
-      "keywords": ["Team Management", "Coaching"]
+      "keywords": ["Technical Project Leadership", "Team Management", "Team Building", "Recruiting", "Project Management"]
+    },
+    {
+      "name": "Client & Communication",
+      "keywords": ["Public Speaking", "Education", "Client Relations", "Technology Evangelism", "Industry Trends"]
     }
   ],
-  "work": [
+  "fullTimeWork": [
     {
       "company": "thinAiR",
-      "position": "Senior Software Engineer",
+      "position": "Senior Software Developer",
       "startDate": "2023-10",
       "endDate": "Present",
-      "summary": "Lead XR software development teams for client projects."
-    },
-    {
-      "company": "VR Creators",
-      "position": "Founder",
-      "startDate": "2021-09",
-      "endDate": "Present",
-      "summary": "Help professionals transition to VR careers via coaching."
-    },
-    {
-      "company": "mpressed.ai",
-      "position": "Software Engineer",
-      "startDate": "2024-04",
-      "endDate": "2024-10",
-      "summary": "Developed an AI-powered platform for creating newsletters."
+      "location": "Remote",
+      "summary": "Lead development teams delivering cutting-edge XR solutions, managing full project lifecycles from concept to deployment.",
+      "highlights": [
+        "Technical Project Leadership",
+        "Virtual Reality (VR)",
+        "Augmented Reality (AR)",
+        "Unity",
+        "Recruiting"
+      ]
     },
     {
       "company": "Foundry - Spatial Computing",
       "position": "CTO",
       "startDate": "2022-08",
       "endDate": "2024-01",
-      "summary": "Co-founded to simplify multiplayer VR games; raised $250K+."
+      "location": "Remote",
+      "summary": "Founded startup focused on multiplayer VR simplification. Raised $250K+ in funding. Delivered projects for Dell, Credit Agricole, and Big Rock Creative.",
+      "highlights": [
+        "Virtual Reality (VR)",
+        "Team Management",
+        "Software Development",
+        "Rapid Prototyping",
+        "Team Building"
+      ]
     },
     {
       "company": "Improving",
       "position": "Software Developer",
       "startDate": "2019-05",
       "endDate": "2023-01",
-      "summary": "Built web apps for clients like Assurant and GA Lottery."
+      "location": "Greater Atlanta Area",
+      "summary": "Progressed from intern to Consultant, delivering diverse client projects with Angular, ASP.NET, Azure Functions, and SQL across e-commerce, government, and self-service portals.",
+      "highlights": [
+        "ASP.NET",
+        "C#",
+        "Angular",
+        ".NET Core",
+        "JavaScript"
+      ]
+    },
+    {
+      "company": "Smith Douglas Homes",
+      "position": "Assistant Superintendent",
+      "startDate": "2016-11",
+      "endDate": "2018-12",
+      "location": "Woodstock, GA",
+      "summary": "Managed construction of 20+ residential homes simultaneously. Oversaw trade schedules, payroll, quality inspections, and homeowner orientations.",
+      "highlights": [
+        "Project Management",
+        "Quality Control",
+        "Client Relations",
+        "Team Coordination",
+        "Budget Management"
+      ]
+    },
+    {
+      "company": "Nautix Lifeguards & Maintenance, LLC.",
+      "position": "Pool Manager",
+      "startDate": "2013-06",
+      "endDate": "2015-09",
+      "location": "",
+      "summary": "Supervised lifeguard team and maintained pool facilities for multiple community swimming pools.",
+      "highlights": [
+        "Team Management",
+        "Safety Protocols",
+        "Customer Service",
+        "Staff Training",
+        "Facility Maintenance"
+      ]
+    },
+    {
+      "company": "UPS",
+      "position": "Sales Associate",
+      "startDate": "2014-02",
+      "endDate": "2015-03",
+      "location": "Kennesaw, Georgia",
+      "summary": "Delivered exceptional customer service and drove sales in a fast-paced shipping environment.",
+      "highlights": [
+        "Customer Service",
+        "Sales",
+        "Logistics",
+        "Problem Solving",
+        "Time Management"
+      ]
+    }
+  ],
+  "contractWork": [
+    {
+      "company": "Twisted Barrel VR",
+      "position": "Senior Software Engineer",
+      "startDate": "2024-05",
+      "endDate": "2024-12",
+      "location": "Remote",
+      "summary": "Built multiplayer authentication system and implemented core gameplay features for VR shooting experience.",
+      "highlights": [
+        "Unity",
+        "C#",
+        "Multiplayer Development",
+        "Virtual Reality (VR)",
+        "Game Development"
+      ]
+    },
+    {
+      "company": "mpressed.ai",
+      "position": "Senior Software Developer",
+      "startDate": "2023-04",
+      "endDate": "2023-10",
+      "location": "Louisiana (Remote)",
+      "summary": "Built AI-powered newsletter platform with drag-and-drop editor using Next.js, Supabase, Langchain, and Stripe.",
+      "highlights": [
+        "Next.js",
+        "AI Software Development",
+        "Supabase",
+        "LangChain",
+        "Stripe"
+      ]
+    },
+    {
+      "company": "Red Team Interactive",
+      "position": "Senior Software Developer",
+      "startDate": "2023-10",
+      "endDate": "2023-12",
+      "location": "Remote",
+      "summary": "Rebuilt physics-based player controller for Sail VR and implemented key gameplay features.",
+      "highlights": [
+        "Unity",
+        "C#",
+        "Virtual Reality (VR)",
+        "Physics",
+        "Game Development"
+      ]
+    },
+    {
+      "company": "XR Terra",
+      "position": "Lead Instructor",
+      "startDate": "2021-06",
+      "endDate": "2022-02",
+      "location": "Remote",
+      "summary": "Led intensive 8-week VR development bootcamps, transforming beginners into skilled Unity/C# developers.",
+      "highlights": [
+        "Virtual Reality (VR)",
+        "Unity",
+        "C#",
+        "Education",
+        "Game Development"
+      ]
+    }
+  ],
+  "sideProjects": [
+    {
+      "company": "VR Creators",
+      "position": "Founder",
+      "startDate": "2021-09",
+      "endDate": "Present",
+      "location": "Atlanta, Georgia",
+      "summary": "Founder of VR Creators, helping tech professionals transition from corporate jobs to fulfilling VR careers.",
+      "highlights": [
+        "Virtual Reality (VR)",
+        "Coaching",
+        "Team Management",
+        "Marketing",
+        "Sales"
+      ]
+    },
+    {
+      "company": "YouTube",
+      "position": "Educator",
+      "startDate": "2020-04",
+      "endDate": "Present",
+      "location": "Remote",
+      "summary": "Creator of VR development tutorials with 3M+ views, teaching Unity and C# fundamentals to aspiring XR developers.",
+      "highlights": [
+        "Virtual Reality (VR)",
+        "Unity",
+        "C#",
+        "Education",
+        "Public Speaking"
+      ]
+    },
+    {
+      "company": "Self-employed",
+      "position": "Portrait Photographer",
+      "startDate": "2016-08",
+      "endDate": "2018-08",
+      "location": "Atlanta, Georgia",
+      "summary": "Delivered professional photography and videography services for major clients including Delta Airlines, Atlanta Braves, and various organizations. Specialized in portraits, events, and promotional content for web, advertising, and social media.",
+      "highlights": [
+        "Photography",
+        "Videography",
+        "Client Relations",
+        "Creative Direction",
+        "Event Management"
+      ]
+    }
+  ],
+  "speakingEngagements": [
+    {
+      "company": "Web3 ATL",
+      "position": "Guest Speaker",
+      "startDate": "2023-11",
+      "endDate": "2023-11",
+      "location": "Atlanta, Georgia",
+      "summary": "Panelist speaker for the talk, \"Are We at the Inflection Point for XR to Go Mainstream?\"",
+      "highlights": [
+        "Public Speaking",
+        "Virtual Reality (VR)",
+        "Industry Trends",
+        "Technology Evangelism",
+        "XR Adoption"
+      ]
+    },
+    {
+      "company": "AWE",
+      "position": "Guest Speaker",
+      "startDate": "2023-03",
+      "endDate": "2023-03",
+      "location": "San Jose, California",
+      "summary": "Panelist speaker for the talk, \"The Case for Custom: Jump Ship from Walled-Garden Multiplayer-VR, Build Your Own App, and Do Your Own Thing\"",
+      "highlights": [
+        "Public Speaking",
+        "Virtual Reality (VR)",
+        "Multiplayer Development",
+        "Independent Development",
+        "Technology Strategy"
+      ]
     }
   ],
   "education": [
     {
       "institution": "Kennesaw State University",
-      "area": "Computer Software Engineering",
+      "area": "Software Engineering",
       "studyType": "Bachelor of Science",
       "startDate": "2014-09",
       "endDate": "2020-05"
