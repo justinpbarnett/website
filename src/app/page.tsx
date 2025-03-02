@@ -37,17 +37,19 @@ export default function Home() {
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const [inputFocused, setInputFocused] = useState(false);
   const [canceledMessageIds, setCanceledMessageIds] = useState<Set<string>>(new Set());
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [chatId, setChatId] = useState<string>('persistent-chat');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const supabase = useSupabase();
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading, setInput, append, stop } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, isLoading, setInput, append, stop, reload } = useChat({
     api: '/api/chat',
     onError: (err: Error) => {
       setError(err.message);
       console.error('Chat error:', err);
     },
-    id: 'persistent-chat',
+    id: chatId,
     initialMessages: typeof window !== 'undefined' 
       ? JSON.parse(localStorage.getItem('chatMessages') || '[]') 
       : [],
@@ -199,6 +201,30 @@ export default function Home() {
     }
   }, []);
 
+  // Add a function to clear chat history
+  const clearChatHistory = () => {
+    // Clear local storage
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('chatMessages');
+    }
+    
+    // Reset canceled message IDs
+    setCanceledMessageIds(new Set());
+    
+    // Clear error state
+    setError(null);
+    
+    // Generate a new chat ID to force a reset of the chat
+    const newChatId = `chat-${Date.now()}`;
+    setChatId(newChatId);
+    
+    // Force reload the page to ensure everything is reset
+    window.location.reload();
+    
+    // Hide the confirmation dialog
+    setShowClearConfirm(false);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Top navigation bar */}
@@ -224,6 +250,13 @@ export default function Home() {
             <div className="flex gap-2 items-center">
               {/* Desktop menu */}
               <div className="hidden md:flex gap-2 items-center">
+                <button
+                  onClick={() => setShowClearConfirm(true)}
+                  className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors mr-2"
+                  disabled={messages.length === 0 || isLoading}
+                >
+                  clear chat
+                </button>
                 <ThemeToggle />
                 {user ? (
                   <UserMenu user={user} />
@@ -278,6 +311,16 @@ export default function Home() {
               >
                 projects
               </a>
+              <button
+                onClick={() => {
+                  setShowMobileMenu(false);
+                  setShowClearConfirm(true);
+                }}
+                className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors text-left"
+                disabled={messages.length === 0 || isLoading}
+              >
+                clear chat
+              </button>
               <div className="flex items-center justify-between">
                 <span className="text-gray-600 dark:text-gray-400">theme</span>
                 <ThemeToggle />
@@ -542,6 +585,34 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      {/* Clear chat confirmation modal */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="relative bg-white dark:bg-black rounded-lg w-full max-w-md border border-gray-200 dark:border-gray-800 shadow-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+              Clear chat history?
+            </h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              This will delete all messages in this conversation. This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-md transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={clearChatHistory}
+                className="px-4 py-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 border border-red-200 dark:border-red-800 rounded-md transition-colors"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
