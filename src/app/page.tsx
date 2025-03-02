@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import Login from '@/components/Login';
 import UserMenu from '@/components/UserMenu';
 import ThemeToggle from '@/components/ThemeToggle';
+import ModelSelector from '@/components/ModelSelector';
 import { useSupabase } from '@/components/providers/SupabaseProvider';
 import type { User } from '@supabase/supabase-js';
 import ReactMarkdown from 'react-markdown';
@@ -39,14 +40,35 @@ export default function Home() {
   const [canceledMessageIds, setCanceledMessageIds] = useState<Set<string>>(new Set());
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [chatId, setChatId] = useState<string>('persistent-chat');
+  const [selectedModel, setSelectedModel] = useState<string>('openai:gpt-3.5-turbo');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const loginModalRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const clearConfirmRef = useRef<HTMLDivElement>(null);
   const supabase = useSupabase();
 
   const { messages, input, handleInputChange, handleSubmit, isLoading, setInput, append, stop, reload } = useChat({
     api: '/api/chat',
     onError: (err: Error) => {
-      setError(err.message);
+      // Set a more user-friendly error message
+      let errorMessage = err.message;
+      
+      // Check for common error patterns and provide more helpful messages
+      if (errorMessage.includes('API key')) {
+        errorMessage = 'API key error. Please check the server configuration.';
+      } else if (errorMessage.includes('rate limit') || errorMessage.includes('quota')) {
+        errorMessage = 'Rate limit exceeded. Please try again in a moment.';
+      } else if (errorMessage.includes('not available') || errorMessage.includes('invalid model')) {
+        errorMessage = `The selected model is currently unavailable. Please try a different model.`;
+      } else if (errorMessage.includes('Authentication required')) {
+        errorMessage = `This model requires you to log in. Please log in to use premium models.`;
+      } else if (errorMessage === 'An error occurred.') {
+        // Generic error from AI SDK - provide more context
+        errorMessage = `Error communicating with the selected model. Please try a different model or try again later.`;
+      }
+      
+      setError(errorMessage);
       console.error('Chat error:', err);
     },
     id: chatId,
@@ -58,6 +80,10 @@ export default function Home() {
         const updatedMessages = [...messages, message];
         localStorage.setItem('chatMessages', JSON.stringify(updatedMessages));
       }
+    },
+    body: {
+      model: selectedModel,
+      isAuthenticated: !!user
     },
     experimental_throttle: 50
   });
@@ -122,7 +148,12 @@ export default function Home() {
       await append({
         content: suggestion,
         role: 'user',
-      } as Message);
+      } as Message, {
+        body: {
+          model: selectedModel,
+          isAuthenticated: !!user
+        }
+      });
     } catch (err) {
       console.error('Failed to send suggestion:', err);
       setError(err instanceof Error ? err.message : 'Failed to send suggestion');
@@ -142,7 +173,12 @@ export default function Home() {
     if (!input.trim()) return;
     
     try {
-      await handleSubmit(e);
+      await handleSubmit(e, {
+        body: {
+          model: selectedModel,
+          isAuthenticated: !!user
+        }
+      });
     } catch (err) {
       console.error('Failed to send message:', err);
       setError(err instanceof Error ? err.message : 'Failed to send message');
@@ -225,51 +261,73 @@ export default function Home() {
     setShowClearConfirm(false);
   };
 
+  // Add a function to handle model change
+  const handleModelChange = (model: string) => {
+    setSelectedModel(model);
+    // Clear error when model changes
+    setError(null);
+  };
+
+  // Check if the current model is expensive and reset to a free model if user is not logged in
+  useEffect(() => {
+    const [provider, modelName] = selectedModel.split(':');
+    
+    // Define expensive models (same as in the API route)
+    const isExpensiveModel = (
+      // OpenAI expensive models
+      (provider === 'openai' && ['gpt-4o', 'gpt-4-turbo', 'gpt-4', 'o1', 'o1-mini', 'o1-preview', 'o3-mini'].includes(modelName)) ||
+      // Anthropic expensive models
+      (provider === 'anthropic' && ['claude-3-7-sonnet-latest', 'claude-3-5-sonnet-latest', 'claude-3-opus-latest', 'claude-3-sonnet-latest'].includes(modelName)) ||
+      // Google expensive models
+      (provider === 'google' && ['gemini-2.0-flash-001', 'gemini-1.5-pro-latest'].includes(modelName)) ||
+      // Grok models
+      (provider === 'grok')
+    );
+    
+    // If the model is expensive and user is not logged in, reset to a free model
+    if (isExpensiveModel && !user) {
+      setSelectedModel('openai:gpt-3.5-turbo');
+      console.log('Reset to free model because the selected model requires login');
+    }
+  }, [selectedModel, user]);
+
+  // Close modals when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // Close mobile menu when clicking outside
+      if (showMobileMenu && 
+          mobileMenuRef.current && 
+          !mobileMenuRef.current.contains(event.target as Node)) {
+        setShowMobileMenu(false);
+      }
+      
+      // Close login modal when clicking outside
+      if (showLogin && 
+          loginModalRef.current && 
+          !loginModalRef.current.contains(event.target as Node)) {
+        setShowLogin(false);
+      }
+      
+      // Close clear confirmation when clicking outside
+      if (showClearConfirm && 
+          clearConfirmRef.current && 
+          !clearConfirmRef.current.contains(event.target as Node)) {
+        setShowClearConfirm(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showMobileMenu, showLogin, showClearConfirm]);
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Top navigation bar */}
       <div className="fixed top-0 left-0 right-0 z-30">
         <div className="max-w-5xl mx-auto w-full px-8 py-4">
-          <div className="flex justify-between items-center">
-            {/* Desktop resume link */}
-            <div className="hidden md:flex gap-4">
-              <a
-                href="/resume"
-                className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
-              >
-                résumé
-              </a>
-              <a
-                href="/projects"
-                className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
-              >
-                projects
-              </a>
-            </div>
-
-            <div className="flex gap-2 items-center">
-              {/* Desktop menu */}
-              <div className="hidden md:flex gap-2 items-center">
-                <button
-                  onClick={() => setShowClearConfirm(true)}
-                  className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors mr-2"
-                  disabled={messages.length === 0 || isLoading}
-                >
-                  clear chat
-                </button>
-                <ThemeToggle />
-                {user ? (
-                  <UserMenu user={user} />
-                ) : (
-                  <button
-                    onClick={() => setShowLogin(!showLogin)}
-                    className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
-                  >
-                    login
-                  </button>
-                )}
-              </div>
-              
+          <div className="flex items-center justify-between w-full">
+            {/* Left side: Mobile menu button and desktop resume links */}
+            <div className="flex items-center">
               {/* Mobile menu button */}
               <button
                 onClick={() => setShowMobileMenu(!showMobileMenu)}
@@ -291,56 +349,115 @@ export default function Home() {
                   />
                 </svg>
               </button>
+              
+              {/* Desktop resume links */}
+              <div className="hidden md:flex gap-4 ml-2">
+                <a
+                  href="/resume"
+                  className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
+                >
+                  résumé
+                </a>
+                <a
+                  href="/projects"
+                  className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
+                >
+                  projects
+                </a>
+              </div>
+            </div>
+            
+            {/* Center: Split button (desktop only) */}
+            <div className="hidden md:flex">
+              <div className="w-36 border-r-0 rounded-r-none">
+                <ModelSelector 
+                  selectedModel={selectedModel}
+                  onModelChange={handleModelChange}
+                  disabled={isLoading}
+                  isLoggedIn={!!user}
+                />
+              </div>
+              <button
+                onClick={() => setShowClearConfirm(true)}
+                className={cn(
+                  "px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-800 rounded-md rounded-l-none border-l-0",
+                  messages.length > 0 
+                    ? "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors" 
+                    : "text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                )}
+                disabled={messages.length === 0 || isLoading}
+              >
+                Clear
+              </button>
+            </div>
+
+            {/* Right side: Theme toggle and user menu/login */}
+            <div className="flex gap-4 items-center">
+              <ThemeToggle />
+              {user ? (
+                <UserMenu user={user} />
+              ) : (
+                <button
+                  onClick={() => setShowLogin(!showLogin)}
+                  className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
+                >
+                  login
+                </button>
+              )}
             </div>
           </div>
         </div>
 
         {/* Mobile menu */}
         {showMobileMenu && (
-          <div className="md:hidden absolute top-full left-0 right-0 bg-white dark:bg-black border-t dark:border-gray-800">
-            <div className="max-w-5xl mx-auto w-full px-8 py-4 flex flex-col gap-4">
-              <a
-                href="/resume"
-                className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
-              >
-                résumé
-              </a>
-              <a
-                href="/projects"
-                className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
-              >
-                projects
-              </a>
-              <button
-                onClick={() => {
-                  setShowMobileMenu(false);
-                  setShowClearConfirm(true);
-                }}
-                className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors text-left"
-                disabled={messages.length === 0 || isLoading}
-              >
-                clear chat
-              </button>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600 dark:text-gray-400">theme</span>
-                <ThemeToggle />
-              </div>
-              {!user && (
-                <button
-                  onClick={() => {
-                    setShowMobileMenu(false);
-                    setShowLogin(true);
-                  }}
-                  className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
-                >
-                  login
-                </button>
-              )}
-              {user && (
-                <div className="border-t dark:border-gray-800 pt-4">
-                  <UserMenu user={user} />
+          <div 
+            ref={mobileMenuRef}
+            className="md:hidden absolute top-full left-0 right-0 bg-white dark:bg-black border-t dark:border-gray-800"
+          >
+            <div className="max-w-5xl mx-auto w-full px-8 py-4">
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-3">
+                  <a
+                    href="/resume"
+                    className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
+                  >
+                    résumé
+                  </a>
+                  <a
+                    href="/projects"
+                    className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
+                  >
+                    projects
+                  </a>
                 </div>
-              )}
+                
+                {/* Split button for model selector and clear chat */}
+                <div className="flex mt-2">
+                  <div className="w-48 border-r-0 rounded-r-none">
+                    <ModelSelector 
+                      selectedModel={selectedModel}
+                      onModelChange={handleModelChange}
+                      disabled={isLoading}
+                      isLoggedIn={!!user}
+                    />
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowMobileMenu(false);
+                      setShowClearConfirm(true);
+                    }}
+                    className={cn(
+                      "px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-800 rounded-md rounded-l-none border-l-0",
+                      messages.length > 0 
+                        ? "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors" 
+                        : "text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                    )}
+                    disabled={messages.length === 0 || isLoading}
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -352,7 +469,7 @@ export default function Home() {
         // Position at 1/3 of screen height on desktop instead of center
         "md:flex md:items-start md:h-screen md:w-full md:pt-[33vh]",
         // On mobile, position at top
-        "left-0 right-0 top-0 pt-16",
+        "left-0 right-0 top-0 pt-24",
         // Hide when keyboard is open and input is focused on mobile
         isKeyboardOpen && inputFocused && "hidden",
         // Make sure it doesn't interfere with scrolling
@@ -374,7 +491,10 @@ export default function Home() {
       {/* Login modal */}
       {showLogin && !user && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="relative bg-white dark:bg-black rounded-lg w-full max-w-md border border-gray-200 dark:border-gray-800 shadow-lg">
+          <div 
+            ref={loginModalRef}
+            className="relative bg-white dark:bg-black rounded-lg w-full max-w-md border border-gray-200 dark:border-gray-800 shadow-lg"
+          >
             <button
               onClick={() => setShowLogin(false)}
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
@@ -562,7 +682,7 @@ export default function Home() {
                     className="px-4 py-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 border border-gray-200 dark:border-gray-800 rounded-md transition-colors"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 7.5A2.25 2.25 0 017.5 5.25h9a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-9z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 7.5A2.25 2.25 0 017.5 5.25h9a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25-2.25v-9z" />
                     </svg>
                   </button>
                 ) : (
@@ -589,7 +709,10 @@ export default function Home() {
       {/* Clear chat confirmation modal */}
       {showClearConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="relative bg-white dark:bg-black rounded-lg w-full max-w-md border border-gray-200 dark:border-gray-800 shadow-lg p-6">
+          <div 
+            ref={clearConfirmRef}
+            className="relative bg-white dark:bg-black rounded-lg w-full max-w-md border border-gray-200 dark:border-gray-800 shadow-lg p-6"
+          >
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
               Clear chat history?
             </h3>

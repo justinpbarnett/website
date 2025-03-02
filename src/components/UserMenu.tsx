@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useSupabase } from '@/components/providers/SupabaseProvider';
+import { cn } from '@/lib/utils';
 import type { User } from '@supabase/supabase-js';
 
 interface UserMenuProps {
@@ -21,9 +22,20 @@ export default function UserMenu({ user }: UserMenuProps) {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    // Only add the event listener when the menu is open
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isOpen]);
+
+  // Debug user information when component mounts
+  useEffect(() => {
+    console.log('User object:', user);
+    console.log('User metadata:', user.user_metadata);
+    console.log('App metadata:', user.app_metadata);
+    console.log('Identities:', user.identities);
+  }, [user]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -31,7 +43,32 @@ export default function UserMenu({ user }: UserMenuProps) {
 
   // Get user information with provider-specific fallbacks
   const userMetadata = user.user_metadata;
-  const provider = user.app_metadata?.provider || 'email';
+  
+  // Check for GitHub-specific metadata
+  const isGitHubUser = userMetadata?.avatar_url?.includes('github') || 
+                      userMetadata?.html_url?.includes('github') ||
+                      userMetadata?.login;
+
+  // Check for Google-specific metadata
+  const isGoogleUser = userMetadata?.picture?.includes('googleusercontent') ||
+                      (userMetadata?.email_verified === true && !isGitHubUser);
+  
+  // Determine provider based on metadata first, then fall back to identities
+  let provider = 'email';
+  
+  if (isGitHubUser) {
+    provider = 'github';
+    console.log('Provider determined from GitHub metadata');
+  } else if (isGoogleUser) {
+    provider = 'google';
+    console.log('Provider determined from Google metadata');
+  } else if (user.identities && user.identities.length > 0) {
+    provider = user.identities[0].provider;
+    console.log('Provider determined from identities array:', provider);
+  } else if (user.app_metadata?.provider) {
+    provider = user.app_metadata.provider;
+    console.log('Provider determined from app_metadata:', provider);
+  }
   
   // Get avatar URL (both GitHub and Google store it as avatar_url)
   const userAvatar = userMetadata?.avatar_url || userMetadata?.picture;
@@ -50,13 +87,16 @@ export default function UserMenu({ user }: UserMenuProps) {
     user.email?.[0]?.toUpperCase() || // Then email
     '?'; // Final fallback
 
-  const providerName = provider.charAt(0).toUpperCase() + provider.slice(1);
+  // Format provider name for display
+  const providerName = provider === 'github' ? 'GitHub' : 
+                       provider === 'google' ? 'Google' : 
+                       provider.charAt(0).toUpperCase() + provider.slice(1);
 
   return (
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-center"
+        className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors flex items-center"
         aria-label="User menu"
         aria-expanded={isOpen}
       >
@@ -64,34 +104,56 @@ export default function UserMenu({ user }: UserMenuProps) {
           <img
             src={userAvatar}
             alt=""
-            className="w-10 h-10 rounded-full border-2 border-gray-200 dark:border-gray-700"
+            className="w-7 h-7 rounded-full"
           />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 flex items-center justify-center font-medium">
+          <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 flex items-center justify-center text-xs font-medium">
             {userInitial}
           </div>
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 z-50">
-          <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-              {userName}
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-              {user.email || `${providerName} user`}
-            </p>
+        <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-black rounded-lg shadow-lg z-50 border border-gray-200 dark:border-gray-800">
+          <div className="p-6">
+            <div className="text-center mb-4">
+              <div className="flex justify-center mb-3">
+                {userAvatar ? (
+                  <img
+                    src={userAvatar}
+                    alt=""
+                    className="w-16 h-16 rounded-full"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 flex items-center justify-center text-xl font-medium">
+                    {userInitial}
+                  </div>
+                )}
+              </div>
+              <h2 className="text-xl font-bold mb-1 text-gray-900 dark:text-white">
+                {userName}
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300 text-sm">
+                {user.email || `${providerName} user`}
+              </p>
+            </div>
+            
+            <div className="text-sm text-center text-gray-500 dark:text-gray-400 mb-4">
+              signed in with {providerName}
+            </div>
+            
+            <button
+              onClick={handleSignOut}
+              className={cn(
+                "w-full flex items-center justify-center px-4 py-3 rounded-md",
+                "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100",
+                "border border-gray-200 dark:border-gray-800",
+                "transition-colors"
+              )}
+            >
+              <span className="font-medium">sign out</span>
+            </button>
           </div>
-          <div className="px-4 py-2 text-xs text-gray-500 dark:text-gray-400">
-            Signed in with {providerName}
-          </div>
-          <button
-            onClick={handleSignOut}
-            className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            Sign out
-          </button>
         </div>
       )}
     </div>
