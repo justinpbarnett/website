@@ -40,7 +40,7 @@ export default function Home() {
   const [canceledMessageIds, setCanceledMessageIds] = useState<Set<string>>(new Set());
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [chatId, setChatId] = useState<string>('persistent-chat');
-  const [selectedModel, setSelectedModel] = useState<string>('openai:gpt-3.5-turbo');
+  const [selectedModel, setSelectedModel] = useState<string>('openai:gpt-4o-mini');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const loginModalRef = useRef<HTMLDivElement>(null);
@@ -286,7 +286,7 @@ export default function Home() {
     
     // If the model is expensive and user is not logged in, reset to a free model
     if (isExpensiveModel && !user) {
-      setSelectedModel('openai:gpt-3.5-turbo');
+      setSelectedModel('openai:gpt-4o-mini');
       console.log('Reset to free model because the selected model requires login');
     }
   }, [selectedModel, user]);
