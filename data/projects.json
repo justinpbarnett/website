@@ -43,7 +43,7 @@
       "Add pictures or extra content",
       "AI-enhanced text blocks"
     ],
-    "github_url": "https://github.com/justinpbarnett/nwsltrai",
+    "github_url": "",
     "live_url": "https://nwsltr.ai"
   },
   {
@@ -51,11 +51,7 @@
     "name": "VR Creator Club",
     "slug": "vrcreatorclub",
     "description": "A comprehensive VR course with a community of over 1,600 members. It includes a 70+ hour curriculum with 220+ lessons, teaching Unity game engine fundamentals through to advanced multiplayer development techniques. The active community is supported by weekly Q&A calls.",
-    "technologies": [
-      "Unity",
-      "C#",
-      "OBS"
-    ],
+    "technologies": ["Unity", "C#", "OBS"],
     "features": [
       "70+ hour course duration",
       "220+ detailed lessons",
@@ -71,12 +67,7 @@
     "name": "VR County Fair",
     "slug": "vrcountyfair",
     "description": "A VR project built with Unity to demonstrate various VR game development techniques. It includes interactive games like ring toss, shooting balloons, and a strongman hammer game, complemented by user interface elements and a prize exchange system.",
-    "technologies": [
-      "Unity",
-      "C#",
-      "XR Interaction Toolkit",
-      "OpenXR"
-    ],
+    "technologies": ["Unity", "C#", "XR Interaction Toolkit", "OpenXR"],
     "features": [
       "Ring toss game",
       "Shooting balloons game",
@@ -85,6 +76,6 @@
       "Prize exchange system"
     ],
     "github_url": "",
-    "live_url": ""
+    "live_url": "https://skool.com/vrcreatorclub"
   }
 ]
