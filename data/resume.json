@@ -1,7 +1,7 @@
 {
   "basics": {
     "name": "Justin Barnett",
-    "label": "Senior Software Engineer",
+    "label": "Senior Software Developer",
     "email": "barnett.justin@gmail.com",
     "phone": "(770) 318-5334",
     "summary": "Experienced software developer and XR leader specializing in virtual and augmented reality technologies.",
@@ -27,27 +27,65 @@
   "skills": [
     {
       "name": "XR Development",
-      "keywords": ["Virtual Reality (VR)", "Augmented Reality (AR)", "Unity", "Game Development", "Multiplayer Development", "Physics"]
+      "keywords": [
+        "Virtual Reality (VR)",
+        "Augmented Reality (AR)",
+        "Unity",
+        "Game Development",
+        "Multiplayer Development",
+        "Physics"
+      ]
     },
     {
       "name": "Programming",
-      "keywords": ["C#", "SQL", "JavaScript", "TypeScript", ".NET Core", "ASP.NET"]
+      "keywords": [
+        "C#",
+        "SQL",
+        "JavaScript",
+        "TypeScript",
+        ".NET Core",
+        "ASP.NET"
+      ]
     },
     {
       "name": "Web Development",
-      "keywords": ["Next.js", "Angular", "React.js", "Supabase", "Firebase", "Stripe"]
+      "keywords": [
+        "Next.js",
+        "Angular",
+        "React.js",
+        "Supabase",
+        "Firebase",
+        "Stripe"
+      ]
     },
     {
       "name": "AI & Modern Tech",
-      "keywords": ["AI Software Development", "LangChain", "Rapid Prototyping", "Software Development"]
+      "keywords": [
+        "AI Software Development",
+        "LangChain",
+        "Rapid Prototyping",
+        "Software Development"
+      ]
     },
     {
       "name": "Leadership",
-      "keywords": ["Technical Project Leadership", "Team Management", "Team Building", "Recruiting", "Project Management"]
+      "keywords": [
+        "Technical Project Leadership",
+        "Team Management",
+        "Team Building",
+        "Recruiting",
+        "Project Management"
+      ]
     },
     {
       "name": "Client & Communication",
-      "keywords": ["Public Speaking", "Education", "Client Relations", "Technology Evangelism", "Industry Trends"]
+      "keywords": [
+        "Public Speaking",
+        "Education",
+        "Client Relations",
+        "Technology Evangelism",
+        "Industry Trends"
+      ]
     }
   ],
   "fullTimeWork": [
@@ -55,7 +93,7 @@
       "company": "thinAiR",
       "position": "Senior Software Developer",
       "startDate": "2023-10",
-      "endDate": "Present",
+      "endDate": "2025-06",
       "location": "Remote",
       "summary": "Lead development teams delivering cutting-edge XR solutions, managing full project lifecycles from concept to deployment.",
       "highlights": [
@@ -146,7 +184,7 @@
   "contractWork": [
     {
       "company": "Twisted Barrel VR",
-      "position": "Senior Software Engineer",
+      "position": "Senior Software Developer",
       "startDate": "2024-05",
       "endDate": "2024-12",
       "location": "Remote",
