@@ -75,7 +75,7 @@ const modelOptions: ModelOption[] = [
   },
   {
     provider: "anthropic",
-    model: "claude-sonnet-4-latest",
+    model: "claude-sonnet-4-20250514",
     displayName: "Claude Sonnet 4",
     shortName: "Claude 4",
     expensive: true,
