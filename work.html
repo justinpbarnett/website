@@ -411,6 +411,14 @@
       }
       .download-actions {
         margin-top: 15px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+      .copy-status {
+        color: #666;
+        font-size: 12px;
       }
       .footer {
         background-color: #0a0a0a;
@@ -504,6 +512,15 @@
             aria-label="Download Justin Barnett's one-page PDF resume"
             >Download one-page PDF resume</a
           >
+          <button
+            type="button"
+            class="btn btn-primary"
+            id="copy-work-markdown"
+            aria-label="Copy Justin Barnett's work experience as Markdown"
+          >
+            Copy work experience as Markdown
+          </button>
+          <span class="copy-status" id="copy-work-status" aria-live="polite"></span>
         </div>
       </section>
 
@@ -727,6 +744,62 @@
               t && t.scrollIntoView({ behavior: "smooth", block: "start" });
             });
           }));
+        const copyButton = document.getElementById("copy-work-markdown");
+        const copyStatus = document.getElementById("copy-work-status");
+        const getText = (el) => el?.textContent.replace(/\s+/g, " ").trim() || "";
+        const buildWorkMarkdown = () => {
+          const items = Array.from(document.querySelectorAll(".timeline-item"));
+          const lines = ["## Work Experience", ""];
+
+          items.forEach((item) => {
+            const company = getText(item.querySelector("h3"));
+            const period = getText(item.querySelector(".timeline-period"));
+            const role = getText(item.querySelector(".timeline-role"));
+            const location = getText(item.querySelector(".timeline-location"));
+            const description = getText(item.querySelector(".timeline-location + p"));
+            const tags = Array.from(item.querySelectorAll(".tag")).map(getText).filter(Boolean);
+
+            lines.push(`### ${company}`);
+            lines.push(`**${role}** | ${location} | ${period}`);
+            if (description) lines.push(`- ${description}`);
+            if (tags.length) lines.push(`- Technologies: ${tags.join(", ")}`);
+            lines.push("");
+          });
+
+          return lines.join("\n").trim() + "\n";
+        };
+        const fallbackCopy = (text) => {
+          const textarea = document.createElement("textarea");
+          textarea.value = text;
+          textarea.setAttribute("readonly", "");
+          textarea.style.position = "fixed";
+          textarea.style.left = "-9999px";
+          document.body.appendChild(textarea);
+          textarea.select();
+          const copied = document.execCommand("copy");
+          textarea.remove();
+          return copied;
+        };
+
+        copyButton?.addEventListener("click", async () => {
+          const markdown = buildWorkMarkdown();
+          try {
+            if (navigator.clipboard?.writeText) {
+              await navigator.clipboard.writeText(markdown);
+            } else if (!fallbackCopy(markdown)) {
+              throw new Error("Copy command failed");
+            }
+            copyStatus.textContent = "Copied.";
+            copyButton.textContent = "Copied Markdown";
+          } catch (error) {
+            copyStatus.textContent = "Copy failed.";
+          }
+          window.setTimeout(() => {
+            copyStatus.textContent = "";
+            copyButton.textContent = "Copy work experience as Markdown";
+          }, 2000);
+        });
+
         const t = new IntersectionObserver(
           (e) => {
             e.forEach((e) => {
