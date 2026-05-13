@@ -35,6 +35,6 @@ curl -I https://justinpbarnett.com/Justin_Barnett_Resume.pdf
 When changing resume content, update `resume.html`, regenerate `Justin_Barnett_Resume.pdf`, and verify it is one page:
 
 ```bash
-chromium --headless --disable-gpu --no-sandbox --print-to-pdf=Justin_Barnett_Resume.pdf file://$PWD/resume.html
+chromium --headless --disable-gpu --no-sandbox --no-pdf-header-footer --print-to-pdf=Justin_Barnett_Resume.pdf file://$PWD/resume.html
 pdfinfo Justin_Barnett_Resume.pdf | grep Pages
 ```

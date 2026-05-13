@@ -41,7 +41,7 @@ curl -I https://justinpbarnett.com/Justin_Barnett_Resume.pdf
 - Use Chromium headless to regenerate the PDF:
 
 ```bash
-chromium --headless --disable-gpu --no-sandbox --print-to-pdf=Justin_Barnett_Resume.pdf file://$PWD/resume.html
+chromium --headless --disable-gpu --no-sandbox --no-pdf-header-footer --print-to-pdf=Justin_Barnett_Resume.pdf file://$PWD/resume.html
 ```
 
 - Confirm it stays one page:
