@@ -416,6 +416,16 @@
         gap: 10px;
         align-items: center;
       }
+      .icon-btn {
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        line-height: 1;
+      }
       .copy-status {
         color: #666;
         font-size: 12px;
@@ -507,18 +517,20 @@
         <div class="download-actions">
           <a
             href="Justin_Barnett_Resume.pdf"
-            class="btn btn-primary"
+            class="btn btn-primary icon-btn"
             download
             aria-label="Download Justin Barnett's one-page PDF resume"
-            >Download one-page PDF resume</a
+            title="Download one-page PDF resume"
+            >⇩</a
           >
           <button
             type="button"
-            class="btn btn-primary"
+            class="btn btn-primary icon-btn"
             id="copy-work-markdown"
             aria-label="Copy Justin Barnett's work experience as Markdown"
+            title="Copy work experience as Markdown"
           >
-            Copy work experience as Markdown
+            ⧉
           </button>
           <span class="copy-status" id="copy-work-status" aria-live="polite"></span>
         </div>
@@ -790,13 +802,13 @@
               throw new Error("Copy command failed");
             }
             copyStatus.textContent = "Copied.";
-            copyButton.textContent = "Copied Markdown";
+            copyButton.textContent = "✓";
           } catch (error) {
             copyStatus.textContent = "Copy failed.";
           }
           window.setTimeout(() => {
             copyStatus.textContent = "";
-            copyButton.textContent = "Copy work experience as Markdown";
+            copyButton.textContent = "⧉";
           }, 2000);
         });
 
