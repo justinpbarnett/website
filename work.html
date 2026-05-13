@@ -760,27 +760,61 @@
         const copyButton = document.getElementById("copy-work-markdown");
         const copyStatus = document.getElementById("copy-work-status");
         const getText = (el) => el?.textContent.replace(/\s+/g, " ").trim() || "";
+        const pushTags = (lines, container) => {
+          const tags = Array.from(container.querySelectorAll(".tag")).map(getText).filter(Boolean);
+          if (tags.length) lines.push(`- Tags: ${tags.join(", ")}`);
+        };
         const buildWorkMarkdown = () => {
-          const items = Array.from(document.querySelectorAll(".timeline-item"));
-          const lines = ["## Work Experience", ""];
+          const main = document.querySelector("main.container");
+          const lines = [];
+          const title = getText(main.querySelector(".hero h1"));
+          const subtitle = getText(main.querySelector(".hero .subtitle"));
 
-          items.forEach((item) => {
-            const company = getText(item.querySelector("h3"));
-            const period = getText(item.querySelector(".timeline-period"));
-            const role = getText(item.querySelector(".timeline-role"));
-            const location = getText(item.querySelector(".timeline-location"));
-            const description = getText(item.querySelector(".timeline-location + p"));
-            const tags = Array.from(item.querySelectorAll(".tag")).map(getText).filter(Boolean);
+          if (title) lines.push(`# ${title}`, "");
+          if (subtitle) lines.push(subtitle, "");
+          lines.push("[Download one-page PDF resume](Justin_Barnett_Resume.pdf)", "");
 
-            lines.push(`### ${company}`);
-            lines.push(`**${role}** | ${location} | ${period}`);
-            if (description) lines.push(`- ${description}`);
-            if (tags.length) lines.push(`- Technologies: ${tags.join(", ")}`);
-            lines.push("");
+          main.querySelectorAll(".content-section").forEach((section) => {
+            const heading = getText(section.querySelector(":scope > h2"));
+            if (heading) lines.push(`## ${heading}`, "");
+
+            section.querySelectorAll(":scope .timeline-item").forEach((item) => {
+              const company = getText(item.querySelector("h3"));
+              const period = getText(item.querySelector(".timeline-period"));
+              const role = getText(item.querySelector(".timeline-role"));
+              const location = getText(item.querySelector(".timeline-location"));
+              const description = getText(item.querySelector(".timeline-location + p"));
+
+              if (company) lines.push(`### ${company}`);
+              const meta = [role, location, period].filter(Boolean).join(" | ");
+              if (meta) lines.push(meta);
+              if (description) lines.push("", description);
+              pushTags(lines, item);
+              lines.push("");
+            });
+
+            section.querySelectorAll(":scope .project-card").forEach((project) => {
+              const name = getText(project.querySelector("h3"));
+              const role = getText(project.querySelector(".role"));
+              const description = getText(project.querySelector("h3 + p:not(.role), .role + p"));
+              const link = project.querySelector("a[href]");
+
+              if (name) lines.push(`### ${name}`);
+              if (role) lines.push(role);
+              if (description) lines.push("", description);
+              pushTags(lines, project);
+              if (link) lines.push(`- [${getText(link)}](${link.getAttribute("href")})`);
+              lines.push("");
+            });
+
+            section.querySelectorAll(":scope > p").forEach((paragraph) => {
+              lines.push(getText(paragraph), "");
+            });
           });
 
-          return lines.join("\n").trim() + "\n";
+          return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
         };
+        window.buildWorkMarkdown = buildWorkMarkdown;
         const fallbackCopy = (text) => {
           const textarea = document.createElement("textarea");
           textarea.value = text;
