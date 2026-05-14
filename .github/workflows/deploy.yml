@@ -37,4 +37,4 @@ jobs:
           command: pages deploy dist --project-name=justinpbarnett --branch=${{ github.ref_name }} --commit-dirty=true
 
       - name: Print deployment URL
-        run: echo "Deployment URL: ${{ steps.deploy.outputs.deployment-url }}"
+        run: echo "Deployment URL: ${{ steps.deploy.outputs['deployment-url'] }}"
