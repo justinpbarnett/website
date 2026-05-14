@@ -17,7 +17,9 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist
-          cp index.html contact.html work.html resume.html Justin_Barnett_Resume.pdf robots.txt sitemap.xml dist/
+          cp index.html contact.html work.html resume.html Justin_Barnett_Resume.pdf dist/
+          [ -f robots.txt ] && cp robots.txt dist/
+          [ -f sitemap.xml ] && cp sitemap.xml dist/
           cp -R assets dist/
 
       - name: Deploy to Cloudflare Pages
